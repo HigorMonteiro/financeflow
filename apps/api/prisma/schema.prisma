@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  accounts      Account[]
+  transactions  Transaction[]
+  categories    Category[]
+  goals         Goal[]
+  budgets       Budget[]
+  
+  @@map("users")
+}
+
+model Account {
+  id       String   @id @default(cuid())
+  userId   String
+  name     String
+  type     String
+  balance  String   @default("0")
+  currency String   @default("BRL")
+  
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("accounts")
+}
+
+model Category {
+  id        String  @id @default(cuid())
+  userId    String?
+  name      String
+  type      String
+  color     String
+  icon      String
+  isDefault Boolean @default(false) // Categoria padrão para todos os usuários
+  
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("categories")
+}
+
+model Transaction {
+  id                 String   @id @default(cuid())
+  userId             String
+  accountId          String
+  categoryId         String
+  amount             String
+  type               String
+  description        String
+  date               DateTime
+  isRecurring        Boolean  @default(false)
+  installmentNumber  Int?
+  installmentTotal   Int?
+  tags               String   @default("[]")
+  metadata           String?
+  createdAt          DateTime @default(now())
+  
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account            Account              @relation(fields: [accountId], references: [id])
+  category           Category             @relation(fields: [categoryId], references: [id])
+  recurringDetails   RecurringTransaction?
+  
+  @@index([userId, date])
+  @@index([categoryId])
+  @@map("transactions")
+}
+
+model RecurringTransaction {
+  id            String     @id @default(cuid())
+  transactionId String     @unique
+  frequency     String
+  nextDueDate   DateTime
+  endDate       DateTime?
+  
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("recurring_transactions")
+}
+
+model Goal {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  targetAmount  String
+  currentAmount String   @default("0")
+  deadline      DateTime?
+  type          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("goals")
+}
+
+model Budget {
+  id         String   @id @default(cuid())
+  userId     String
+  categoryId String
+  amount     String
+  period     String
+  startDate  DateTime
+  
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("budgets")
+}
+
