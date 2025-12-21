@@ -113,11 +113,11 @@ export class TransactionService {
       throw new AppError(404, 'Conta não encontrada');
     }
 
-    // Verificar se categoria existe
+    // Verificar se categoria existe (pode ser do usuário ou padrão)
     const category = await prisma.category.findFirst({
       where: {
         id: data.categoryId,
-        userId,
+        OR: [{ userId }, { isDefault: true }],
       },
     });
 
@@ -160,6 +160,13 @@ export class TransactionService {
 
   async update(userId: string, id: string, data: UpdateTransactionDTO) {
     const transaction = await this.getById(userId, id);
+    const oldAccount = await prisma.account.findUnique({
+      where: { id: transaction.accountId },
+    });
+
+    if (!oldAccount) {
+      throw new AppError(404, 'Conta não encontrada');
+    }
 
     const updateData: any = {};
 
@@ -167,8 +174,30 @@ export class TransactionService {
     if (data.amount !== undefined) updateData.amount = data.amount;
     if (data.type !== undefined) updateData.type = data.type;
     if (data.date !== undefined) updateData.date = new Date(data.date);
-    if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
-    if (data.accountId !== undefined) updateData.accountId = data.accountId;
+    if (data.categoryId !== undefined) {
+      const category = await prisma.category.findFirst({
+        where: {
+          id: data.categoryId,
+          OR: [{ userId }, { isDefault: true }],
+        },
+      });
+      if (!category) {
+        throw new AppError(404, 'Categoria não encontrada');
+      }
+      updateData.categoryId = data.categoryId;
+    }
+    if (data.accountId !== undefined) {
+      const newAccount = await prisma.account.findFirst({
+        where: {
+          id: data.accountId,
+          userId,
+        },
+      });
+      if (!newAccount) {
+        throw new AppError(404, 'Conta não encontrada');
+      }
+      updateData.accountId = data.accountId;
+    }
 
     const updated = await prisma.transaction.update({
       where: { id },
@@ -179,11 +208,65 @@ export class TransactionService {
       },
     });
 
+    // Reverter saldo da conta antiga
+    const oldAmount = parseFloat(transaction.amount);
+    const oldBalance = parseFloat(oldAccount.balance);
+    const revertedBalance =
+      transaction.type === TransactionType.INCOME
+        ? oldBalance - oldAmount
+        : oldBalance + oldAmount;
+
+    await prisma.account.update({
+      where: { id: oldAccount.id },
+      data: { balance: revertedBalance.toFixed(2) },
+    });
+
+    // Aplicar novo saldo na conta (nova ou mesma)
+    const newAccountId = data.accountId || transaction.accountId;
+    const newAccount = await prisma.account.findUnique({
+      where: { id: newAccountId },
+    });
+
+    if (newAccount) {
+      const newAmount = parseFloat(data.amount || transaction.amount);
+      const newType = (data.type || transaction.type) as TransactionType;
+      const currentBalance = parseFloat(newAccount.balance);
+      const finalBalance =
+        newType === TransactionType.INCOME
+          ? currentBalance + newAmount
+          : currentBalance - newAmount;
+
+      await prisma.account.update({
+        where: { id: newAccountId },
+        data: { balance: finalBalance.toFixed(2) },
+      });
+    }
+
     return updated;
   }
 
   async delete(userId: string, id: string) {
-    await this.getById(userId, id);
+    const transaction = await this.getById(userId, id);
+    const account = await prisma.account.findUnique({
+      where: { id: transaction.accountId },
+    });
+
+    if (!account) {
+      throw new AppError(404, 'Conta não encontrada');
+    }
+
+    // Reverter saldo da conta
+    const amount = parseFloat(transaction.amount);
+    const currentBalance = parseFloat(account.balance);
+    const newBalance =
+      transaction.type === TransactionType.INCOME
+        ? currentBalance - amount
+        : currentBalance + amount;
+
+    await prisma.account.update({
+      where: { id: account.id },
+      data: { balance: newBalance.toFixed(2) },
+    });
 
     await prisma.transaction.delete({
       where: { id },

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowUpDown, Download, Upload } from 'lucide-react';
+import { ArrowUpDown, Download, Upload, Edit, Trash2 } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
 
 export interface Transaction {
@@ -41,6 +41,8 @@ interface TransactionTableProps {
   transactions: Transaction[];
   categories: Category[];
   onCategoryChange?: (transactionId: string, categoryId: string) => void;
+  onEdit?: (transaction: Transaction) => void;
+  onDelete?: (transactionId: string) => void;
   onImport?: () => void;
   onExport?: () => void;
 }
@@ -49,6 +51,8 @@ export function TransactionTable({
   transactions, 
   categories,
   onCategoryChange,
+  onEdit,
+  onDelete,
   onImport, 
   onExport 
 }: TransactionTableProps) {
@@ -209,12 +213,13 @@ export function TransactionTable({
                     </div>
                   </th>
                   <th className="border p-2 text-center">Tipo</th>
+                  <th className="border p-2 text-center">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="border p-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="border p-8 text-center text-muted-foreground">
                       Nenhuma transação encontrada
                     </td>
                   </tr>
@@ -315,6 +320,36 @@ export function TransactionTable({
                         >
                           {transaction.type === 'INCOME' ? 'Receita' : 'Despesa'}
                         </span>
+                      </td>
+                      <td className="border p-2">
+                        <div className="flex items-center justify-center gap-2">
+                          {onEdit && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onEdit(transaction)}
+                              className="h-8 w-8 p-0"
+                              title="Editar transação"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {onDelete && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('Tem certeza que deseja excluir esta transação?')) {
+                                  onDelete(transaction.id);
+                                }
+                              }}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                              title="Excluir transação"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))

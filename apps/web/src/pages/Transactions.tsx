@@ -3,10 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { TransactionTable, Transaction } from '@/components/Transactions/TransactionTable';
 import { TransactionFilters, FilterValues } from '@/components/Transactions/TransactionFilters';
+import { TransactionModal } from '@/components/Transactions/TransactionModal';
 import { CSVImportModal } from '@/components/Import/CSVImportModal';
-import { transactionsService } from '@/services/transactions.service';
+import { Button } from '@/components/ui/button';
+import { transactionsService, Transaction as TransactionType } from '@/services/transactions.service';
 import { categoriesService } from '@/services/categories.service';
 import { accountsService } from '@/services/accounts.service';
+import { Plus } from 'lucide-react';
 
 const initialFilters: FilterValues = {
   search: '',
@@ -23,6 +26,8 @@ const initialFilters: FilterValues = {
 
 export function Transactions() {
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<TransactionType | undefined>();
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
   const queryClient = useQueryClient();
 
@@ -120,15 +125,87 @@ export function Transactions() {
     mutationFn: ({ transactionId, categoryId }: { transactionId: string; categoryId: string }) =>
       transactionsService.updateCategory(transactionId, categoryId),
     onSuccess: () => {
-      // Invalidar e refetch das transações
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      // Também invalidar o dashboard para atualizar os dados
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+
+  // Mutation para criar transação
+  const createTransactionMutation = useMutation({
+    mutationFn: (data: {
+      accountId: string;
+      categoryId: string;
+      amount: string;
+      type: 'INCOME' | 'EXPENSE';
+      description: string;
+      date: string;
+    }) => transactionsService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      setTransactionModalOpen(false);
+      setEditingTransaction(undefined);
+    },
+  });
+
+  // Mutation para atualizar transação
+  const updateTransactionMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<TransactionType> }) =>
+      transactionsService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      setTransactionModalOpen(false);
+      setEditingTransaction(undefined);
+    },
+  });
+
+  // Mutation para deletar transação
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (id: string) => transactionsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
 
   const handleCategoryChange = (transactionId: string, categoryId: string) => {
     updateCategoryMutation.mutate({ transactionId, categoryId });
+  };
+
+  const handleCreateTransaction = () => {
+    setEditingTransaction(undefined);
+    setTransactionModalOpen(true);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction as TransactionType);
+    setTransactionModalOpen(true);
+  };
+
+  const handleDeleteTransaction = (transactionId: string) => {
+    deleteTransactionMutation.mutate(transactionId);
+  };
+
+  const handleSubmitTransaction = async (data: {
+    description: string;
+    amount: string;
+    type: 'INCOME' | 'EXPENSE';
+    categoryId: string;
+    accountId: string;
+    date: string;
+  }) => {
+    if (editingTransaction) {
+      await updateTransactionMutation.mutateAsync({
+        id: editingTransaction.id,
+        data,
+      });
+    } else {
+      await createTransactionMutation.mutateAsync(data);
+    }
   };
 
   // Aplicar filtro de busca no frontend (já que a API não suporta busca textual)
@@ -190,6 +267,10 @@ export function Transactions() {
                 Gerencie suas receitas e despesas
               </p>
             </div>
+            <Button onClick={handleCreateTransaction}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Transação
+            </Button>
           </div>
 
           {/* Filtros */}
@@ -209,6 +290,8 @@ export function Transactions() {
             transactions={transactions}
             categories={categoriesData || []}
             onCategoryChange={handleCategoryChange}
+            onEdit={handleEditTransaction}
+            onDelete={handleDeleteTransaction}
             onImport={() => setImportModalOpen(true)}
             onExport={() => {
               // TODO: Implementar exportação
@@ -229,6 +312,18 @@ export function Transactions() {
             onSuccess={() => {
               refetch();
             }}
+          />
+
+          <TransactionModal
+            open={transactionModalOpen}
+            onOpenChange={setTransactionModalOpen}
+            transaction={editingTransaction}
+            categories={categoriesData || []}
+            accounts={accountsData || []}
+            onSubmit={handleSubmitTransaction}
+            isLoading={
+              createTransactionMutation.isPending || updateTransactionMutation.isPending
+            }
           />
         </div>
       </div>
