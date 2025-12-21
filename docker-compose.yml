@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./apps/api
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: file:./dev.db
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      NODE_ENV: development
+    volumes:
+      - ./apps/api:/app
+      - ./apps/api/prisma:/app/prisma
+    command: pnpm dev
+
+  web:
+    build: ./apps/web
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3000
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    command: pnpm dev
+

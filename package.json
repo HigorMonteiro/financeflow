@@ -1,0 +1,19 @@
+{
+  "name": "finance-flow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema financeiro pessoal - Web App",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "build": "pnpm --filter api build && pnpm --filter web build",
+    "test": "pnpm --filter api test && pnpm --filter web test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
