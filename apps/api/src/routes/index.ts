@@ -6,6 +6,7 @@ import analyticsRoutes from './analytics.routes';
 import categoryRoutes from './category.routes';
 import accountRoutes from './account.routes';
 import userRoutes from './user.routes';
+import cardRoutes from './card.routes';
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use('/analytics', analyticsRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/accounts', accountRoutes);
 router.use('/user', userRoutes);
+router.use('/cards', cardRoutes);
 
 export default router;
 
