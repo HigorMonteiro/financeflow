@@ -1,9 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Receipt, TrendingUp, Target, Wallet, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Receipt, TrendingUp, Target, Wallet, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { authService } from '@/services/auth.service';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/contexts/SidebarContext';
+import { typography } from '@/lib/typography';
 
 const menuItems = [
   {
@@ -37,6 +39,7 @@ export function Sidebar() {
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const clearAuth = useAuthStore((state) => state.clearAuth);
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   const handleLogout = () => {
     clearAuth();
@@ -45,17 +48,40 @@ export function Sidebar() {
   };
 
   return (
-    <div className="hidden md:flex flex-col h-screen w-64 bg-card border-r border-border">
+    <div className={cn(
+      'hidden md:flex flex-col h-screen bg-card border-r border-border transition-all duration-300',
+      isCollapsed ? 'w-16' : 'w-64'
+    )}>
       {/* Logo/Header */}
-      <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold">FinanceFlow</h1>
-        {user && (
-          <p className="text-sm text-muted-foreground mt-1">{user.name}</p>
+      <div className={cn(
+        'border-b border-border flex items-center',
+        isCollapsed ? 'p-4 justify-center' : 'p-6 justify-between'
+      )}>
+        {!isCollapsed && (
+          <div className="flex-1">
+            <h1 className={typography.h3}>FinanceFlow</h1>
+            {user && (
+              <p className={`${typography.caption} mt-1`}>{user.name}</p>
+            )}
+          </div>
         )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="min-h-[44px] min-w-[44px]"
+          aria-label={isCollapsed ? 'Expandir sidebar' : 'Minimizar sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-5 w-5" />
+          ) : (
+            <ChevronLeft className="h-5 w-5" />
+          )}
+        </Button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className={cn('flex-1 space-y-1 overflow-y-auto', isCollapsed ? 'p-2' : 'p-4')}>
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
@@ -65,40 +91,54 @@ export function Sidebar() {
               key={item.href}
               to={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors min-h-[44px]',
+                'flex items-center rounded-lg transition-colors min-h-[44px]',
+                isCollapsed ? 'justify-center px-2' : 'gap-3 px-3',
                 isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
+              title={isCollapsed ? item.title : undefined}
             >
-              <Icon className="h-5 w-5" />
-              <span>{item.title}</span>
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              {!isCollapsed && (
+                <span className={typography.bodySmall}>{item.title}</span>
+              )}
             </Link>
           );
         })}
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-border space-y-2">
+      <div className={cn('border-t border-border space-y-2', isCollapsed ? 'p-2' : 'p-4')}>
         <Link
           to="/settings"
           className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors min-h-[44px]',
+            'flex items-center rounded-lg transition-colors min-h-[44px]',
+            isCollapsed ? 'justify-center px-2' : 'gap-3 px-3',
             location.pathname === '/settings'
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
+          title={isCollapsed ? 'Configurações' : undefined}
         >
-          <Settings className="h-5 w-5" />
-          <span>Configurações</span>
+          <Settings className="h-5 w-5 flex-shrink-0" />
+          {!isCollapsed && (
+            <span className={typography.bodySmall}>Configurações</span>
+          )}
         </Link>
         <Button
           variant="ghost"
-          className="w-full justify-start min-h-[44px]"
+          className={cn(
+            'w-full min-h-[44px]',
+            isCollapsed ? 'justify-center px-2' : 'justify-start'
+          )}
           onClick={handleLogout}
+          title={isCollapsed ? 'Sair' : undefined}
         >
-          <LogOut className="h-5 w-5 mr-3" />
-          Sair
+          <LogOut className={cn('h-5 w-5 flex-shrink-0', !isCollapsed && 'mr-3')} />
+          {!isCollapsed && (
+            <span className={typography.bodySmall}>Sair</span>
+          )}
         </Button>
       </div>
     </div>
