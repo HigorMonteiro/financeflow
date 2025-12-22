@@ -41,9 +41,6 @@ export function Dashboard() {
     );
   }
 
-  const balance = parseFloat(data?.balance.total || '0');
-  const monthlyIncome = parseFloat(data?.monthly.income || '0');
-  const monthlyExpenses = parseFloat(data?.monthly.expenses || '0');
   const monthlyBalance = parseFloat(data?.monthly.balance || '0');
 
   return (
@@ -203,15 +200,8 @@ export function Dashboard() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p
-                            className={`font-bold ${
-                              transaction.type === 'INCOME'
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                            }`}
-                          >
-                            {transaction.type === 'INCOME' ? '+' : '-'}
-                            {formatCurrency(transaction.amount)}
+                          <p className="font-bold text-red-600">
+                            -{formatCurrency(transaction.amount)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {transaction.account.name}
@@ -222,7 +212,7 @@ export function Dashboard() {
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-center py-8">
-                    Nenhuma transação ainda. Importe um CSV para começar!
+                    Nenhuma despesa ainda. Importe um CSV para começar!
                   </p>
                 )}
               </CardContent>

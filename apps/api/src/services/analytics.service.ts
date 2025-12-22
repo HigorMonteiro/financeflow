@@ -90,9 +90,12 @@ export class AnalyticsService {
 
     const monthlyBalance = monthlyIncome - monthlyExpenses;
 
-    // Transações recentes (últimas 10)
+    // Últimas 5 despesas
     const recentTransactions = await prisma.transaction.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        type: 'EXPENSE',
+      },
       include: {
         category: true,
         account: true,
@@ -100,7 +103,7 @@ export class AnalyticsService {
       orderBy: {
         date: 'desc',
       },
-      take: 10,
+      take: 5,
     });
 
     // Breakdown por categoria (mês atual)

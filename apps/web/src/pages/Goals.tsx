@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { GoalCard } from '@/components/Goals/GoalCard';
 import { GoalForm } from '@/components/Goals/GoalForm';
@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import { goalsService, Goal, CreateGoalData } from '@/services/goals.service';
+import { useUserPagination } from '@/hooks/useUserPagination';
 
 export function Goals() {
   const [goalModalOpen, setGoalModalOpen] = useState(false);
@@ -23,11 +24,30 @@ export function Goals() {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('deadline');
   const queryClient = useQueryClient();
+  const itemsPerPage = useUserPagination();
 
-  const { data: goals, isLoading } = useQuery({
-    queryKey: ['goals'],
-    queryFn: goalsService.getAll,
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ['goals', itemsPerPage],
+    queryFn: ({ pageParam = 1 }) =>
+      goalsService.getAll({ page: pageParam, limit: itemsPerPage }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.hasMore && lastPage.page) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
+
+  const goalsData = useMemo(() => {
+    return data?.pages.flatMap((page) => page.goals) || [];
+  }, [data]);
 
   const createMutation = useMutation({
     mutationFn: goalsService.create,
@@ -60,10 +80,33 @@ export function Goals() {
     },
   });
 
-  const filteredAndSortedGoals = useMemo(() => {
-    if (!goals) return [];
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-    let filtered = [...goals];
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const filteredAndSortedGoals = useMemo(() => {
+    if (!goalsData.length) return [];
+
+    let filtered = [...goalsData];
 
     if (statusFilter === 'active') {
       filtered = filtered.filter((goal) => goal.progress < 100);
@@ -88,7 +131,7 @@ export function Goals() {
     });
 
     return filtered;
-  }, [goals, statusFilter, sortBy]);
+  }, [goalsData, statusFilter, sortBy]);
 
   const handleCreateGoal = () => {
     setEditingGoal(undefined);
@@ -156,11 +199,11 @@ export function Goals() {
           {filteredAndSortedGoals.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg mb-4">
-                {goals?.length === 0
+                {goalsData.length === 0
                   ? 'Você ainda não tem metas criadas'
                   : 'Nenhuma meta encontrada com os filtros selecionados'}
               </p>
-              {goals?.length === 0 && (
+              {goalsData.length === 0 && (
                 <Button onClick={handleCreateGoal}>
                   <Plus className="h-4 w-4 mr-2" />
                   Criar Primeira Meta
@@ -232,6 +275,21 @@ export function Goals() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Scroll infinito trigger */}
+          <div ref={observerTarget} className="h-20 flex items-center justify-center">
+            {isFetchingNextPage && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando mais metas...</span>
+              </div>
+            )}
+            {!hasNextPage && goalsData.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Todas as metas foram carregadas ({goalsData.length} {goalsData.length === 1 ? 'meta' : 'metas'})
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </AppLayout>

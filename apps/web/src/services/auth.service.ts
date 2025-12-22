@@ -16,6 +16,7 @@ export interface User {
   email: string;
   name: string;
   avatarUrl: string | null;
+  itemsPerPage?: number;
 }
 
 export interface AuthResponse {
@@ -46,6 +47,7 @@ export const authService = {
     email?: string;
     password?: string;
     currentPassword?: string;
+    itemsPerPage?: number;
   }): Promise<User> {
     const response = await api.put<User>('/user', data);
     return response.data;

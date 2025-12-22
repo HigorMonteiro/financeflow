@@ -40,7 +40,7 @@ const BANK_DISPLAY_NAMES: Record<string, string> = {
 export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedCardId, setSelectedCardId] = useState<string>('');
+  const [selectedCardId, setSelectedCardId] = useState<string>('none');
   const [detectedBank, setDetectedBank] = useState<{
     bank: string;
     confidence: number;
@@ -52,10 +52,6 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
     queryFn: cardsService.getAll,
     enabled: open,
     retry: false,
-    onError: (error) => {
-      // Ignorar erro se a tabela de cartões não existir ainda
-      console.warn('Não foi possível carregar cartões:', error);
-    },
   });
 
   const importMutation = useMutation({
@@ -76,7 +72,7 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
       setTimeout(() => {
         onOpenChange(false);
         setDetectedBank(null);
-        setSelectedCardId('');
+        setSelectedCardId('none');
       }, 2000);
     },
   });
@@ -139,7 +135,7 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
     if (file) {
       const formData = new FormData();
       formData.append('file', file);
-      if (selectedCardId) {
+      if (selectedCardId && selectedCardId !== 'none') {
         formData.append('cardId', selectedCardId);
       }
       importMutation.mutate(formData as any);
@@ -198,7 +194,7 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
                   onClick={() => {
                     setFile(null);
                     setDetectedBank(null);
-                    setSelectedCardId('');
+                    setSelectedCardId('none');
                   }}
                   className="mt-2"
                 >
@@ -232,7 +228,7 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
           </div>
 
           {/* Seleção de Cartão (quando banco detectado) */}
-          {file && detectedBank && cards && cards.length > 0 && (
+          {file && detectedBank && Array.isArray(cards) && cards.length > 0 && (
             <div className="space-y-2">
               <Label>Associar a um cartão (opcional)</Label>
               <Select value={selectedCardId} onValueChange={setSelectedCardId}>
@@ -240,14 +236,14 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
                   <SelectValue placeholder="Selecione um cartão ou deixe em branco" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Não associar a cartão</SelectItem>
+                  <SelectItem value="none">Não associar a cartão</SelectItem>
                   {cards
                     .filter(
-                      (card) =>
+                      (card: any) =>
                         card.isActive &&
-                        (card.bank === detectedBank.bank || !selectedCardId)
+                        (card.bank === detectedBank.bank || selectedCardId === 'none')
                     )
-                    .map((card) => (
+                    .map((card: any) => (
                       <SelectItem key={card.id} value={card.id}>
                         {card.name} ({BANK_DISPLAY_NAMES[card.bank] || card.bank})
                         {card.lastFourDigits && ` • Final ${card.lastFourDigits}`}

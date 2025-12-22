@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  avatarUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  password     String
+  avatarUrl    String?
+  itemsPerPage Int      @default(50) // Preferência de itens por página (3, 5, 10, 50)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   
   accounts      Account[]
   transactions  Transaction[]

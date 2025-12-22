@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { TransactionTable, Transaction } from '@/components/Transactions/TransactionTable';
 import { TransactionFilters, FilterValues } from '@/components/Transactions/TransactionFilters';
@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { transactionsService, Transaction as TransactionType } from '@/services/transactions.service';
 import { categoriesService } from '@/services/categories.service';
 import { accountsService } from '@/services/accounts.service';
-import { Plus } from 'lucide-react';
+import { useUserPagination } from '@/hooks/useUserPagination';
+import { Plus, Loader2 } from 'lucide-react';
 
 const initialFilters: FilterValues = {
   search: '',
@@ -30,6 +31,7 @@ export function Transactions() {
   const [editingTransaction, setEditingTransaction] = useState<TransactionType | undefined>();
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
   const queryClient = useQueryClient();
+  const itemsPerPage = useUserPagination();
 
   // Buscar categorias e contas para os filtros
   const { 
@@ -115,10 +117,29 @@ export function Transactions() {
     return params;
   }, [filters]);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['transactions', queryParams],
-    queryFn: () => transactionsService.getAll(queryParams),
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['transactions', queryParams, itemsPerPage],
+    queryFn: ({ pageParam = 1 }) =>
+      transactionsService.getAll({ ...queryParams, page: pageParam, limit: itemsPerPage }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.hasMore && lastPage.page) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
+
+  const transactionsData = useMemo(() => {
+    return data?.pages.flatMap((page) => page.transactions) || [];
+  }, [data]);
 
   // Mutation para atualizar categoria
   const updateCategoryMutation = useMutation({
@@ -208,26 +229,49 @@ export function Transactions() {
     }
   };
 
+  // Observer para scroll infinito
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   // Aplicar filtro de busca no frontend (já que a API não suporta busca textual)
   const transactions: Transaction[] = useMemo(() => {
-    const allTransactions =
-      data?.transactions.map((t) => ({
-        id: t.id,
-        date: t.date,
-        description: t.description,
-        amount: t.amount,
-        type: t.type,
-        category: {
-          id: t.category.id,
-          name: t.category.name,
-          color: t.category.color,
-          icon: t.category.icon,
-        },
-        account: {
-          id: t.account.id,
-          name: t.account.name,
-        },
-      })) || [];
+    const allTransactions = transactionsData.map((t) => ({
+      id: t.id,
+      date: t.date,
+      description: t.description,
+      amount: t.amount,
+      type: t.type,
+      category: {
+        id: t.category.id,
+        name: t.category.name,
+        color: t.category.color,
+        icon: t.category.icon,
+      },
+      account: {
+        id: t.account.id,
+        name: t.account.name,
+      },
+    }));
 
     if (!filters.search) {
       return allTransactions;
@@ -240,7 +284,7 @@ export function Transactions() {
         t.category.name.toLowerCase().includes(searchLower) ||
         t.account.name.toLowerCase().includes(searchLower)
     );
-  }, [data, filters.search]);
+  }, [transactionsData, filters.search]);
 
   const handleResetFilters = () => {
     setFilters(initialFilters);
@@ -298,6 +342,21 @@ export function Transactions() {
               console.log('Exportar');
             }}
           />
+
+          {/* Scroll infinito trigger */}
+          <div ref={observerTarget} className="h-20 flex items-center justify-center">
+            {isFetchingNextPage && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando mais transações...</span>
+              </div>
+            )}
+            {!hasNextPage && transactions.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Todas as transações foram carregadas ({transactions.length} {transactions.length === 1 ? 'transação' : 'transações'})
+              </p>
+            )}
+          </div>
           
           {/* Debug: Mostrar quantas categorias estão disponíveis */}
           {process.env.NODE_ENV === 'development' && (

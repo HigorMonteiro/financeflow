@@ -23,6 +23,10 @@ export interface Transaction {
 export interface TransactionsResponse {
   transactions: Transaction[];
   total: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  hasMore?: boolean;
 }
 
 export const transactionsService = {
@@ -34,6 +38,8 @@ export const transactionsService = {
     type?: 'INCOME' | 'EXPENSE';
     minAmount?: string;
     maxAmount?: string;
+    page?: number;
+    limit?: number;
   }): Promise<TransactionsResponse> {
     const response = await api.get<TransactionsResponse>('/transactions', { params });
     return response.data;

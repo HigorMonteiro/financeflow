@@ -1,13 +1,12 @@
-import { useState } from 'react';
 import { AppLayout } from '@/components/Layout/AppLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserSettings } from '@/components/Settings/UserSettings';
 import { CategorySettings } from '@/components/Settings/CategorySettings';
 import { IncomeSettings } from '@/components/Settings/IncomeSettings';
 import { SavingsSettings } from '@/components/Settings/SavingsSettings';
 import { CardsSettings } from '@/components/Settings/CardsSettings';
-import { User, FolderTree, DollarSign, PiggyBank, CreditCard } from 'lucide-react';
+import { PaginationSettings } from '@/components/Settings/PaginationSettings';
+import { User, FolderTree, DollarSign, PiggyBank, CreditCard, List } from 'lucide-react';
 
 export function Settings() {
   return (
@@ -22,7 +21,7 @@ export function Settings() {
           </div>
 
           <Tabs defaultValue="user" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="user" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Usuário</span>
@@ -42,6 +41,10 @@ export function Settings() {
               <TabsTrigger value="cards" className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Cartões</span>
+              </TabsTrigger>
+              <TabsTrigger value="pagination" className="flex items-center gap-2">
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline">Paginação</span>
               </TabsTrigger>
             </TabsList>
 
@@ -63,6 +66,10 @@ export function Settings() {
 
             <TabsContent value="cards" className="mt-6">
               <CardsSettings />
+            </TabsContent>
+
+            <TabsContent value="pagination" className="mt-6">
+              <PaginationSettings />
             </TabsContent>
           </Tabs>
         </div>

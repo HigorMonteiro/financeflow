@@ -29,6 +29,8 @@ export class TransactionService {
     type?: string;
     minAmount?: string;
     maxAmount?: string;
+    page?: number;
+    limit?: number;
   }) {
     const where: any = { userId };
 
@@ -64,20 +66,33 @@ export class TransactionService {
       where.amount = { ...where.amount, lte: filters.maxAmount };
     }
 
-    const transactions = await prisma.transaction.findMany({
-      where,
-      include: {
-        category: true,
-        account: true,
-      },
-      orderBy: {
-        date: 'desc',
-      },
-    });
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 50;
+    const skip = (page - 1) * limit;
+
+    const [transactions, total] = await Promise.all([
+      prisma.transaction.findMany({
+        where,
+        include: {
+          category: true,
+          account: true,
+        },
+        orderBy: {
+          date: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.transaction.count({ where }),
+    ]);
 
     return {
       transactions,
-      total: transactions.length,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasMore: page * limit < total,
     };
   }
 

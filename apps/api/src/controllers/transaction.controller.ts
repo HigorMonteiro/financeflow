@@ -10,7 +10,17 @@ export class TransactionController {
       return;
     }
 
-    const result = await transactionService.getAll(req.userId, req.query as any);
+    const filters: any = { ...req.query };
+    
+    if (filters.page) {
+      filters.page = parseInt(filters.page as string) || 1;
+    }
+    
+    if (filters.limit) {
+      filters.limit = parseInt(filters.limit as string) || 50;
+    }
+
+    const result = await transactionService.getAll(req.userId, filters);
     res.json(result);
   }
 

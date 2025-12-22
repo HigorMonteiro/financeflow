@@ -33,6 +33,7 @@ export class AuthController {
         email: true,
         name: true,
         avatarUrl: true,
+        itemsPerPage: true,
         createdAt: true,
       },
     });

@@ -10,8 +10,16 @@ export class GoalController {
       return;
     }
 
-    const goals = await goalService.getAll(req.userId);
-    res.json(goals);
+    const filters: any = {};
+    if (req.query.page) {
+      filters.page = parseInt(req.query.page as string) || 1;
+    }
+    if (req.query.limit) {
+      filters.limit = parseInt(req.query.limit as string) || 50;
+    }
+
+    const result = await goalService.getAll(req.userId, filters);
+    res.json(result);
   }
 
   async getById(req: Request, res: Response): Promise<void> {

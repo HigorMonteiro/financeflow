@@ -15,6 +15,15 @@ export interface Goal {
   updatedAt: string;
 }
 
+export interface GoalsResponse {
+  goals: Goal[];
+  total: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  hasMore?: boolean;
+}
+
 export interface CreateGoalData {
   name: string;
   targetAmount: string;
@@ -32,8 +41,8 @@ export interface UpdateGoalData {
 }
 
 export const goalsService = {
-  async getAll(): Promise<Goal[]> {
-    const response = await api.get<Goal[]>('/goals');
+  async getAll(params?: { page?: number; limit?: number }): Promise<GoalsResponse> {
+    const response = await api.get<GoalsResponse>('/goals', { params });
     return response.data;
   },
 

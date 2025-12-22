@@ -7,6 +7,7 @@ export interface UpdateUserDTO {
   email?: string;
   password?: string;
   currentPassword?: string;
+  itemsPerPage?: number;
 }
 
 export class UserService {
@@ -52,6 +53,14 @@ export class UserService {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
 
+    if (data.itemsPerPage !== undefined) {
+      const validValues = [3, 5, 10, 50];
+      if (!validValues.includes(data.itemsPerPage)) {
+        throw new AppError(400, 'itemsPerPage deve ser 3, 5, 10 ou 50');
+      }
+      updateData.itemsPerPage = data.itemsPerPage;
+    }
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -60,6 +69,7 @@ export class UserService {
         email: true,
         name: true,
         avatarUrl: true,
+        itemsPerPage: true,
         createdAt: true,
       },
     });

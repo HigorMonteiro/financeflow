@@ -35,19 +35,37 @@ export class GoalService {
   /**
    * Get all goals for a user
    */
-  async getAll(userId: string) {
-    const goals = await prisma.goal.findMany({
-      where: { userId },
-      orderBy: [
-        { deadline: 'asc' },
-        { createdAt: 'desc' },
-      ],
-    });
+  async getAll(userId: string, filters?: { page?: number; limit?: number }) {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 50;
+    const skip = (page - 1) * limit;
 
-    return goals.map((goal) => ({
+    const [goals, total] = await Promise.all([
+      prisma.goal.findMany({
+        where: { userId },
+        orderBy: [
+          { deadline: 'asc' },
+          { createdAt: 'desc' },
+        ],
+        skip,
+        take: limit,
+      }),
+      prisma.goal.count({ where: { userId } }),
+    ]);
+
+    const goalsWithProgress = goals.map((goal) => ({
       ...goal,
       progress: this.calculateProgress(goal.currentAmount, goal.targetAmount),
     }));
+
+    return {
+      goals: goalsWithProgress,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasMore: page * limit < total,
+    };
   }
 
   /**
