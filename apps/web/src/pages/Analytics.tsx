@@ -11,6 +11,7 @@ import { AnalyticsFilters } from '@/components/Analytics/AnalyticsFilters';
 import { analyticsService } from '@/services/analytics.service';
 import { format, subMonths, subDays } from 'date-fns';
 import { Calendar, TrendingUp, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
+import { typography } from '@/lib/typography';
 
 export function Analytics() {
   const [period, setPeriod] = useState<'month' | 'quarter' | 'year'>('month');
@@ -83,7 +84,7 @@ export function Analytics() {
           {/* Comparação de Períodos */}
           <div className="grid grid-cols-1 gap-4 md:gap-6">
             <div className="hidden md:flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-              <span className="text-sm font-medium">Período de comparação:</span>
+              <span className={typography.label}>Período de comparação:</span>
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant={period === 'month' ? 'default' : 'outline'}
@@ -127,10 +128,10 @@ export function Analytics() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                <h2 className="text-lg md:text-xl font-semibold">Tendências</h2>
+                <h2 className={typography.h2}>Tendências</h2>
               </div>
               <div className="hidden md:flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-                <span className="text-sm font-medium">Agrupamento:</span>
+                <span className={typography.label}>Agrupamento:</span>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant={trendPeriod === 'day' ? 'default' : 'outline'}
@@ -183,10 +184,10 @@ export function Analytics() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5" />
-                <h2 className="text-lg md:text-xl font-semibold">Fluxo de Caixa</h2>
+                <h2 className={typography.h2}>Fluxo de Caixa</h2>
               </div>
               <div className="hidden md:flex items-center gap-2">
-                <span className="text-sm font-medium">Período:</span>
+                <span className={typography.label}>Período:</span>
                 <Button
                   variant={months === 3 ? 'default' : 'outline'}
                   size="sm"
@@ -238,7 +239,7 @@ export function Analytics() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <PieChartIcon className="h-5 w-5" />
-                  <h2 className="text-lg md:text-xl font-semibold">Análise por Categoria</h2>
+                  <h2 className={typography.h2}>Análise por Categoria</h2>
                 </div>
                 <div className="hidden md:flex items-center gap-2">
                   <Button

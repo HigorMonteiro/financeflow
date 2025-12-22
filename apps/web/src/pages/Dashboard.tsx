@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { analyticsService } from '@/services/analytics.service';
 import { TrendingUp, TrendingDown, Wallet, Target, ArrowRight } from 'lucide-react';
+import { typography } from '@/lib/typography';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -49,8 +50,8 @@ export function Dashboard() {
         <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-xl md:text-3xl font-bold">Dashboard</h1>
-            <p className="hidden md:block text-sm md:text-base text-muted-foreground">
+            <h1 className={typography.h1}>Dashboard</h1>
+            <p className={`hidden md:block ${typography.subtitle}`}>
               Visão geral das suas finanças
             </p>
           </div>
@@ -60,12 +61,12 @@ export function Dashboard() {
             {/* Saldo Total */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Saldo Total</CardTitle>
+                <CardTitle className={typography.label}>Saldo Total</CardTitle>
                 <Wallet className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(data?.balance.total || '0')}</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className={typography.currencyMedium}>{formatCurrency(data?.balance.total || '0')}</div>
+                <p className={`${typography.caption} mt-1`}>
                   {data?.balance.byAccount.length || 0} conta(s)
                 </p>
               </CardContent>
@@ -74,14 +75,14 @@ export function Dashboard() {
             {/* Receitas do Mês */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Receitas do Mês</CardTitle>
+                <CardTitle className={typography.label}>Receitas do Mês</CardTitle>
                 <TrendingUp className="h-4 w-4 text-green-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className={`${typography.currencyMedium} text-green-600`}>
                   {formatCurrency(data?.monthly.income || '0')}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={`${typography.caption} mt-1`}>
                   Mês atual
                 </p>
               </CardContent>
@@ -90,14 +91,14 @@ export function Dashboard() {
             {/* Despesas do Mês */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Despesas do Mês</CardTitle>
+                <CardTitle className={typography.label}>Despesas do Mês</CardTitle>
                 <TrendingDown className="h-4 w-4 text-red-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">
+                <div className={`${typography.currencyMedium} text-red-600`}>
                   {formatCurrency(data?.monthly.expenses || '0')}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={`${typography.caption} mt-1`}>
                   Mês atual
                 </p>
               </CardContent>
@@ -106,18 +107,18 @@ export function Dashboard() {
             {/* Saldo do Mês */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Saldo do Mês</CardTitle>
+                <CardTitle className={typography.label}>Saldo do Mês</CardTitle>
                 <Wallet className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div
-                  className={`text-2xl font-bold ${
+                  className={`${typography.currencyMedium} ${
                     monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}
                 >
                   {formatCurrency(data?.monthly.balance || '0')}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={`${typography.caption} mt-1`}>
                   {monthlyBalance >= 0 ? 'Positivo' : 'Negativo'}
                 </p>
               </CardContent>
@@ -143,7 +144,7 @@ export function Dashboard() {
                 <div className="space-y-4">
                   {data.goals.slice(0, 3).map((goal) => (
                     <div key={goal.id} className="hover:bg-muted/50 p-2 rounded transition-colors">
-                      <div className="flex justify-between text-sm mb-1">
+                      <div className={`flex justify-between ${typography.bodySmall} mb-1`}>
                         <span className="font-medium">{goal.name}</span>
                         <span>
                           {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
@@ -160,7 +161,7 @@ export function Dashboard() {
                     </div>
                   ))}
                   {data.goals.length > 3 && (
-                    <p className="text-sm text-muted-foreground text-center pt-2">
+                    <p className={`${typography.bodySmall} text-muted-foreground text-center pt-2`}>
                       +{data.goals.length - 3} {data.goals.length - 3 === 1 ? 'meta' : 'metas'} restantes
                     </p>
                   )}
@@ -184,8 +185,8 @@ export function Dashboard() {
                         className="flex items-start justify-between p-3 rounded-lg border gap-3"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm md:text-base truncate">{transaction.description}</p>
-                          <div className="flex flex-wrap items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground mt-1">
+                          <p className={`font-medium ${typography.body} truncate`}>{transaction.description}</p>
+                          <div className={`flex flex-wrap items-center gap-1.5 md:gap-2 ${typography.bodySmall} text-muted-foreground mt-1`}>
                             <span>{format(new Date(transaction.date), 'dd/MM/yyyy')}</span>
                             <span>•</span>
                             <span
@@ -202,7 +203,7 @@ export function Dashboard() {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="font-bold text-sm md:text-base text-red-600">
+                          <p className={`font-bold ${typography.body} text-red-600`}>
                             -{formatCurrency(transaction.amount)}
                           </p>
                         </div>

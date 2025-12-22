@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Loader2 } from 'lucide-react';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { ImportExportActions } from '@/components/Transactions/ImportExportActions';
+import { typography } from '@/lib/typography';
 
 const initialFilters: FilterValues = {
   search: '',
@@ -359,7 +360,7 @@ export function Transactions() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
         <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           <div className="flex justify-between items-center gap-2">
-            <h1 className="text-xl md:text-3xl font-bold">Transações</h1>
+            <h1 className={typography.h1}>Transações</h1>
             <div className="flex items-center gap-2">
               {/* Filtros Mobile */}
               <div className="md:hidden flex items-center gap-2">
@@ -438,7 +439,7 @@ export function Transactions() {
               </div>
             )}
             {!hasNextPage && transactions.length > 0 && (
-              <p className="text-sm text-muted-foreground">
+              <p className={`${typography.bodySmall} text-muted-foreground`}>
                 Todas as transações foram carregadas ({transactions.length} {transactions.length === 1 ? 'transação' : 'transações'})
               </p>
             )}
@@ -446,7 +447,7 @@ export function Transactions() {
           
           {/* Debug: Mostrar quantas categorias estão disponíveis */}
           {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-muted-foreground">
+            <div className={`${typography.caption} text-muted-foreground`}>
               Debug: {categoriesData?.length || 0} categorias carregadas
             </div>
           )}

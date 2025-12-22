@@ -18,6 +18,7 @@ import { budgetsService, Budget, CreateBudgetData, BudgetPeriod } from '@/servic
 import { categoriesService } from '@/services/categories.service';
 import { useUserPagination } from '@/hooks/useUserPagination';
 import { useToast } from '@/hooks/use-toast';
+import { typography } from '@/lib/typography';
 
 export function Budgets() {
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
@@ -241,7 +242,7 @@ export function Budgets() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
         <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           <div className="flex justify-between items-center gap-2">
-            <h1 className="text-xl md:text-3xl font-bold">Orçamentos</h1>
+            <h1 className={typography.h1}>Orçamentos</h1>
             <div className="flex items-center gap-2">
               <BudgetFilters
                 status={statusFilter}

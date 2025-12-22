@@ -8,6 +8,7 @@ import { CardsSettings } from '@/components/Settings/CardsSettings';
 import { PaginationSettings } from '@/components/Settings/PaginationSettings';
 import { AccountSettings } from '@/components/Settings/AccountSettings';
 import { User, FolderTree, DollarSign, PiggyBank, CreditCard, List, Wallet } from 'lucide-react';
+import { typography } from '@/lib/typography';
 
 export function Settings() {
   return (
