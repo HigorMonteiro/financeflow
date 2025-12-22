@@ -8,6 +8,7 @@ import accountRoutes from './account.routes';
 import userRoutes from './user.routes';
 import cardRoutes from './card.routes';
 import goalRoutes from './goal.routes';
+import budgetRoutes from './budget.routes';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use('/accounts', accountRoutes);
 router.use('/user', userRoutes);
 router.use('/cards', cardRoutes);
 router.use('/goals', goalRoutes);
+router.use('/budgets', budgetRoutes);
 
 export default router;
 

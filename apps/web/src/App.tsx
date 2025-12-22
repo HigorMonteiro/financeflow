@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Transactions } from './pages/Transactions';
 import { Analytics } from './pages/Analytics';
 import { Goals } from './pages/Goals';
+import { Budgets } from './pages/Budgets';
 import { Settings } from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -66,6 +67,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Goals />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets"
+        element={
+          <ProtectedRoute>
+            <Budgets />
           </ProtectedRoute>
         }
       />

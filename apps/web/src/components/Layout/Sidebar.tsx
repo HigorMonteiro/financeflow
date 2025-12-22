@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Receipt, TrendingUp, Target, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Receipt, TrendingUp, Target, Wallet, Settings, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { authService } from '@/services/auth.service';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,11 @@ const menuItems = [
     title: 'Metas',
     href: '/goals',
     icon: Target,
+  },
+  {
+    title: 'Orçamentos',
+    href: '/budgets',
+    icon: Wallet,
   },
 ];
 
