@@ -150,7 +150,7 @@ export function CardsSettings() {
       <CardContent>
         {(isCreating || editingId) && (
           <div className="mb-6 p-4 border rounded-lg space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Nome do Cartão *</Label>
                 <Input
@@ -179,7 +179,7 @@ export function CardsSettings() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Últimos 4 dígitos</Label>
                 <Input

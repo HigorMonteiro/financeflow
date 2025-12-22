@@ -114,7 +114,7 @@ export function BudgetForm({
           value={formData.categoryId}
           onValueChange={(value) => handleChange('categoryId', value)}
         >
-          <SelectTrigger id="categoryId">
+          <SelectTrigger id="categoryId" className="min-h-[44px]">
             <SelectValue placeholder="Selecione uma categoria" />
           </SelectTrigger>
           <SelectContent>
@@ -136,7 +136,7 @@ export function BudgetForm({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="amount">Valor do Orçamento *</Label>
           <Input
@@ -145,6 +145,7 @@ export function BudgetForm({
             value={formData.amount}
             onChange={(e) => handleChange('amount', e.target.value)}
             placeholder="0,00"
+            className="min-h-[44px]"
           />
           {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
         </div>
@@ -155,7 +156,7 @@ export function BudgetForm({
             value={formData.period}
             onValueChange={(value) => handleChange('period', value)}
           >
-            <SelectTrigger id="period">
+            <SelectTrigger id="period" className="min-h-[44px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -176,15 +177,16 @@ export function BudgetForm({
           type="date"
           value={formData.startDate}
           onChange={(e) => handleChange('startDate', e.target.value)}
+          className="min-h-[44px]"
         />
         {errors.startDate && <p className="text-sm text-red-500">{errors.startDate}</p>}
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading} className="w-full sm:w-auto min-h-[44px]">
           Cancelar
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="w-full sm:w-auto min-h-[44px]">
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

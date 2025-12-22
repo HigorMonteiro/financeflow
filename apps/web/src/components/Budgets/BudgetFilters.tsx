@@ -6,6 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { MobileFilters } from '@/components/ui/MobileFilters';
+import { Label } from '@/components/ui/label';
 import { BudgetPeriod } from '@/services/budgets.service';
 
 export type FilterStatus = 'all' | 'safe' | 'nearLimit' | 'overBudget';
@@ -20,7 +22,7 @@ interface BudgetFiltersProps {
   onPeriodChange?: (period: BudgetPeriod | 'all') => void;
 }
 
-export function BudgetFilters({
+function BudgetFiltersContent({
   status,
   sortBy,
   period = 'all',
@@ -29,44 +31,50 @@ export function BudgetFilters({
   onPeriodChange,
 }: BudgetFiltersProps) {
   return (
-    <div className="flex flex-wrap items-center gap-4">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Status:</span>
-        <Button
-          variant={status === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onStatusChange('all')}
-        >
-          Todos
-        </Button>
-        <Button
-          variant={status === 'safe' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onStatusChange('safe')}
-        >
-          Dentro do Orçamento
-        </Button>
-        <Button
-          variant={status === 'nearLimit' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onStatusChange('nearLimit')}
-        >
-          Próximo do Limite
-        </Button>
-        <Button
-          variant={status === 'overBudget' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onStatusChange('overBudget')}
-        >
-          Excedido
-        </Button>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label>Status</Label>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={status === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onStatusChange('all')}
+            className="min-h-[44px]"
+          >
+            Todos
+          </Button>
+          <Button
+            variant={status === 'safe' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onStatusChange('safe')}
+            className="min-h-[44px]"
+          >
+            Dentro do Orçamento
+          </Button>
+          <Button
+            variant={status === 'nearLimit' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onStatusChange('nearLimit')}
+            className="min-h-[44px]"
+          >
+            Próximo do Limite
+          </Button>
+          <Button
+            variant={status === 'overBudget' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onStatusChange('overBudget')}
+            className="min-h-[44px]"
+          >
+            Excedido
+          </Button>
+        </div>
       </div>
 
       {onPeriodChange && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Período:</span>
+        <div className="space-y-2">
+          <Label>Período</Label>
           <Select value={period} onValueChange={(value) => onPeriodChange(value as BudgetPeriod | 'all')}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="min-h-[44px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -79,10 +87,10 @@ export function BudgetFilters({
         </div>
       )}
 
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Ordenar por:</span>
+      <div className="space-y-2">
+        <Label>Ordenar por</Label>
         <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="min-h-[44px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -94,6 +102,95 @@ export function BudgetFilters({
         </Select>
       </div>
     </div>
+  );
+}
+
+export function BudgetFilters(props: BudgetFiltersProps) {
+  const activeFiltersCount =
+    (props.status !== 'all' ? 1 : 0) + (props.period && props.period !== 'all' ? 1 : 0);
+
+  return (
+    <>
+      {/* Mobile: Botão minimalista */}
+      <MobileFilters
+        activeFiltersCount={activeFiltersCount}
+        title="Filtros de Orçamentos"
+        className="md:hidden"
+      >
+        <BudgetFiltersContent {...props} />
+      </MobileFilters>
+
+      {/* Desktop: Filtros completos */}
+      <div className="hidden md:flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Status:</span>
+          <Button
+            variant={props.status === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => props.onStatusChange('all')}
+            className="min-h-[44px]"
+          >
+            Todos
+          </Button>
+          <Button
+            variant={props.status === 'safe' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => props.onStatusChange('safe')}
+            className="min-h-[44px]"
+          >
+            Dentro do Orçamento
+          </Button>
+          <Button
+            variant={props.status === 'nearLimit' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => props.onStatusChange('nearLimit')}
+            className="min-h-[44px]"
+          >
+            Próximo do Limite
+          </Button>
+          <Button
+            variant={props.status === 'overBudget' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => props.onStatusChange('overBudget')}
+            className="min-h-[44px]"
+          >
+            Excedido
+          </Button>
+        </div>
+
+        {props.onPeriodChange && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Período:</span>
+            <Select value={props.period} onValueChange={(value) => props.onPeriodChange?.(value as BudgetPeriod | 'all')}>
+              <SelectTrigger className="w-[150px] min-h-[44px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="WEEKLY">Semanal</SelectItem>
+                <SelectItem value="MONTHLY">Mensal</SelectItem>
+                <SelectItem value="YEARLY">Anual</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Ordenar por:</span>
+          <Select value={props.sortBy} onValueChange={(value) => props.onSortChange(value as SortOption)}>
+            <SelectTrigger className="w-[180px] min-h-[44px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="period">Período</SelectItem>
+              <SelectItem value="progress">Progresso</SelectItem>
+              <SelectItem value="amount">Valor</SelectItem>
+              <SelectItem value="created">Data de Criação</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </>
   );
 }
 

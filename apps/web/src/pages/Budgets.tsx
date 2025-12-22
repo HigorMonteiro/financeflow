@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { budgetsService, Budget, CreateBudgetData, BudgetPeriod } from '@/services/budgets.service';
 import { categoriesService } from '@/services/categories.service';
 import { useUserPagination } from '@/hooks/useUserPagination';
@@ -237,30 +238,26 @@ export function Budgets() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Orçamentos</h1>
-              <p className="text-muted-foreground">
-                Gerencie seus orçamentos por categoria e período
-              </p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+          <div className="flex justify-between items-center gap-2">
+            <h1 className="text-xl md:text-3xl font-bold">Orçamentos</h1>
+            <div className="flex items-center gap-2">
+              <BudgetFilters
+                status={statusFilter}
+                sortBy={sortBy}
+                period={periodFilter}
+                onStatusChange={setStatusFilter}
+                onSortChange={setSortBy}
+                onPeriodChange={setPeriodFilter}
+              />
+              {/* Botão Desktop */}
+              <FloatingActionButton
+                onClick={handleCreateBudget}
+                label="Novo Orçamento"
+              />
             </div>
-            <Button onClick={handleCreateBudget}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Orçamento
-            </Button>
           </div>
-
-          {/* Filtros */}
-          <BudgetFilters
-            status={statusFilter}
-            sortBy={sortBy}
-            period={periodFilter}
-            onStatusChange={setStatusFilter}
-            onSortChange={setSortBy}
-            onPeriodChange={setPeriodFilter}
-          />
 
           {/* Lista de Orçamentos */}
           {filteredAndSortedBudgets.length === 0 ? (
@@ -278,7 +275,7 @@ export function Budgets() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {filteredAndSortedBudgets.map((budget) => (
                 <BudgetCard
                   key={budget.id}

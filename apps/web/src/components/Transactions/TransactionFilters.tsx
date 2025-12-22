@@ -38,6 +38,7 @@ interface TransactionFiltersProps {
   isLoadingAccounts?: boolean;
   categoriesError?: Error | null;
   accountsError?: Error | null;
+  isMobile?: boolean;
 }
 
 export function TransactionFilters({
@@ -50,8 +51,9 @@ export function TransactionFilters({
   isLoadingAccounts = false,
   categoriesError,
   accountsError,
+  isMobile = false,
 }: TransactionFiltersProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(isMobile); // Mobile sempre aberto
   
   const activeFilters = useMemo(() => {
     const active: Array<{ key: keyof FilterValues; label: string; icon: React.ReactNode }> = [];
@@ -217,40 +219,43 @@ export function TransactionFilters({
     onFiltersChange(newFilters);
   };
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros
-            {hasActiveFilters && (
-              <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">
-                {activeFilters.length} {activeFilters.length === 1 ? 'ativo' : 'ativos'}
-              </span>
-            )}
-          </CardTitle>
-          <div className="flex gap-2">
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={onReset}>
-                <X className="h-4 w-4 mr-1" />
-                Limpar todos
+  const content = (
+    <>
+      {!isMobile && (
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros
+              {hasActiveFilters && (
+                <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">
+                  {activeFilters.length} {activeFilters.length === 1 ? 'ativo' : 'ativos'}
+                </span>
+              )}
+            </CardTitle>
+            <div className="flex gap-2">
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={onReset} className="min-h-[44px]">
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar todos
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(!isOpen)}
+                className="min-h-[44px]"
+              >
+                {isOpen ? 'Ocultar' : 'Mostrar'}
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              {isOpen ? 'Ocultar' : 'Mostrar'}
-            </Button>
+            </div>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
+      )}
       
       {/* Filtros Ativos */}
       {hasActiveFilters && (
-        <CardContent className="pt-0 pb-4 border-b">
+        <div className={isMobile ? "mb-4" : "px-6 pt-0 pb-4 border-b"}>
           <div className="flex flex-wrap gap-2">
             {activeFilters.map((filter) => (
               <Toggle
@@ -263,7 +268,7 @@ export function TransactionFilters({
                 }}
                 variant="outline"
                 size="sm"
-                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary hover:bg-primary/90"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary hover:bg-primary/90 min-h-[44px]"
                 aria-label={`Remover filtro: ${filter.label}`}
               >
                 <span className="flex items-center gap-1.5">
@@ -274,11 +279,11 @@ export function TransactionFilters({
               </Toggle>
             ))}
           </div>
-        </CardContent>
+        </div>
       )}
 
       {isOpen && (
-        <CardContent>
+        <div className={isMobile ? "" : "px-6 pb-6"}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Busca */}
             <div className="space-y-2">
@@ -490,9 +495,15 @@ export function TransactionFilters({
               />
             </div>
           </div>
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </>
   );
+
+  if (isMobile) {
+    return content;
+  }
+
+  return <Card>{content}</Card>;
 }
 

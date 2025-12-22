@@ -137,7 +137,7 @@ export function GoalForm({ goal, onSubmit, onCancel, isLoading = false }: GoalFo
           value={formData.name}
           onChange={(e) => handleChange('name', e.target.value)}
           placeholder="Ex: Viagem para Europa"
-          className={errors.name ? 'border-destructive' : ''}
+          className={`min-h-[44px] ${errors.name ? 'border-destructive' : ''}`}
         />
         {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
       </div>
@@ -152,7 +152,7 @@ export function GoalForm({ goal, onSubmit, onCancel, isLoading = false }: GoalFo
           value={formData.targetAmount}
           onChange={(e) => handleChange('targetAmount', e.target.value)}
           placeholder="0.00"
-          className={errors.targetAmount ? 'border-destructive' : ''}
+          className={`min-h-[44px] ${errors.targetAmount ? 'border-destructive' : ''}`}
         />
         {errors.targetAmount && (
           <p className="text-sm text-destructive">{errors.targetAmount}</p>
@@ -167,7 +167,7 @@ export function GoalForm({ goal, onSubmit, onCancel, isLoading = false }: GoalFo
           value={formData.currentAmount}
           onChange={(e) => handleChange('currentAmount', e.target.value)}
           placeholder="0.00"
-          className={errors.currentAmount ? 'border-destructive' : ''}
+          className={`min-h-[44px] ${errors.currentAmount ? 'border-destructive' : ''}`}
         />
         {errors.currentAmount && (
           <p className="text-sm text-destructive">{errors.currentAmount}</p>
@@ -182,7 +182,7 @@ export function GoalForm({ goal, onSubmit, onCancel, isLoading = false }: GoalFo
           value={formData.type}
           onValueChange={(value) => handleChange('type', value)}
         >
-          <SelectTrigger>
+          <SelectTrigger className="min-h-[44px]">
             <SelectValue placeholder="Selecione o tipo" />
           </SelectTrigger>
           <SelectContent>
@@ -202,18 +202,18 @@ export function GoalForm({ goal, onSubmit, onCancel, isLoading = false }: GoalFo
           type="date"
           value={formData.deadline ? new Date(formData.deadline).toISOString().split('T')[0] : ''}
           onChange={(e) => handleChange('deadline', e.target.value || null)}
-          className={errors.deadline ? 'border-destructive' : ''}
+          className={`min-h-[44px] ${errors.deadline ? 'border-destructive' : ''}`}
         />
         {errors.deadline && (
           <p className="text-sm text-destructive">{errors.deadline}</p>
         )}
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading} className="w-full sm:w-auto min-h-[44px]">
           Cancelar
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="w-full sm:w-auto min-h-[44px]">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {goal ? 'Salvar Alterações' : 'Criar Meta'}
         </Button>

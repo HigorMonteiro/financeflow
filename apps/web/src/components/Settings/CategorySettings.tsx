@@ -164,13 +164,14 @@ export function CategorySettings() {
       <CardContent>
         {(isCreating || editingId) && (
           <div className="mb-6 p-4 border rounded-lg space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Nome</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Nome da categoria"
+                  className="min-h-[44px]"
                 />
               </div>
               <div className="space-y-2">
@@ -179,7 +180,7 @@ export function CategorySettings() {
                   value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value as any })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="min-h-[44px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -189,7 +190,7 @@ export function CategorySettings() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Cor</Label>
                 <Input

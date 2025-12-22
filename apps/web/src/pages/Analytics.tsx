@@ -7,6 +7,7 @@ import { TrendsChart } from '@/components/Analytics/TrendsChart';
 import { CashFlowChart } from '@/components/Analytics/CashFlowChart';
 import { CategoryPieChart } from '@/components/Analytics/CategoryPieChart';
 import { PeriodComparison } from '@/components/Analytics/PeriodComparison';
+import { AnalyticsFilters } from '@/components/Analytics/AnalyticsFilters';
 import { analyticsService } from '@/services/analytics.service';
 import { format, subMonths, subDays } from 'date-fns';
 import { Calendar, TrendingUp, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
@@ -58,42 +59,57 @@ export function Analytics() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+          <div className="flex items-center justify-between gap-2">
             <div>
-              <h1 className="text-3xl font-bold">Análises Detalhadas</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-xl md:text-3xl font-bold">Análises Detalhadas</h1>
+              <p className="hidden md:block text-sm md:text-base text-muted-foreground">
                 Visualize tendências, fluxo de caixa e análises por categoria
               </p>
             </div>
+            <AnalyticsFilters
+              period={period}
+              trendPeriod={trendPeriod}
+              months={months}
+              categoryType={categoryType}
+              onPeriodChange={setPeriod}
+              onTrendPeriodChange={setTrendPeriod}
+              onMonthsChange={setMonths}
+              onCategoryTypeChange={setCategoryType}
+            />
           </div>
 
           {/* Comparação de Períodos */}
-          <div className="grid grid-cols-1 gap-6">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="grid grid-cols-1 gap-4 md:gap-6">
+            <div className="hidden md:flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
               <span className="text-sm font-medium">Período de comparação:</span>
-              <Button
-                variant={period === 'month' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPeriod('month')}
-              >
-                Mensal
-              </Button>
-              <Button
-                variant={period === 'quarter' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPeriod('quarter')}
-              >
-                Trimestral
-              </Button>
-              <Button
-                variant={period === 'year' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPeriod('year')}
-              >
-                Anual
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={period === 'month' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPeriod('month')}
+                  className="min-h-[44px]"
+                >
+                  Mensal
+                </Button>
+                <Button
+                  variant={period === 'quarter' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPeriod('quarter')}
+                  className="min-h-[44px]"
+                >
+                  Trimestral
+                </Button>
+                <Button
+                  variant={period === 'year' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPeriod('year')}
+                  className="min-h-[44px]"
+                >
+                  Anual
+                </Button>
+              </div>
             </div>
             {comparisonLoading ? (
               <Card>
@@ -107,35 +123,40 @@ export function Analytics() {
           </div>
 
           {/* Tendências */}
-          <div className="grid grid-cols-1 gap-6">
-            <div className="flex items-center justify-between">
+          <div className="grid grid-cols-1 gap-4 md:gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                <h2 className="text-xl font-semibold">Tendências</h2>
+                <h2 className="text-lg md:text-xl font-semibold">Tendências</h2>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="hidden md:flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                 <span className="text-sm font-medium">Agrupamento:</span>
-                <Button
-                  variant={trendPeriod === 'day' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTrendPeriod('day')}
-                >
-                  Diário
-                </Button>
-                <Button
-                  variant={trendPeriod === 'week' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTrendPeriod('week')}
-                >
-                  Semanal
-                </Button>
-                <Button
-                  variant={trendPeriod === 'month' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTrendPeriod('month')}
-                >
-                  Mensal
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={trendPeriod === 'day' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTrendPeriod('day')}
+                    className="min-h-[44px]"
+                  >
+                    Diário
+                  </Button>
+                  <Button
+                    variant={trendPeriod === 'week' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTrendPeriod('week')}
+                    className="min-h-[44px]"
+                  >
+                    Semanal
+                  </Button>
+                  <Button
+                    variant={trendPeriod === 'month' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTrendPeriod('month')}
+                    className="min-h-[44px]"
+                  >
+                    Mensal
+                  </Button>
+                </div>
               </div>
             </div>
             {trendsLoading ? (
@@ -162,14 +183,15 @@ export function Analytics() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5" />
-                <h2 className="text-xl font-semibold">Fluxo de Caixa</h2>
+                <h2 className="text-lg md:text-xl font-semibold">Fluxo de Caixa</h2>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <span className="text-sm font-medium">Período:</span>
                 <Button
                   variant={months === 3 ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setMonths(3)}
+                  className="min-h-[44px]"
                 >
                   3 meses
                 </Button>
@@ -177,6 +199,7 @@ export function Analytics() {
                   variant={months === 6 ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setMonths(6)}
+                  className="min-h-[44px]"
                 >
                   6 meses
                 </Button>
@@ -184,6 +207,7 @@ export function Analytics() {
                   variant={months === 12 ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setMonths(12)}
+                  className="min-h-[44px]"
                 >
                   12 meses
                 </Button>
@@ -214,13 +238,14 @@ export function Analytics() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <PieChartIcon className="h-5 w-5" />
-                  <h2 className="text-xl font-semibold">Análise por Categoria</h2>
+                  <h2 className="text-lg md:text-xl font-semibold">Análise por Categoria</h2>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-2">
                   <Button
                     variant={categoryType === 'EXPENSE' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setCategoryType('EXPENSE')}
+                    className="min-h-[44px]"
                   >
                     Despesas
                   </Button>
@@ -228,6 +253,7 @@ export function Analytics() {
                     variant={categoryType === 'INCOME' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setCategoryType('INCOME')}
+                    className="min-h-[44px]"
                   >
                     Receitas
                   </Button>

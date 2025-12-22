@@ -64,9 +64,9 @@ export function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Criar Conta</CardTitle>
-          <CardDescription>Preencha os dados para criar sua conta</CardDescription>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-xl md:text-2xl">Criar Conta</CardTitle>
+          <CardDescription className="hidden md:block text-sm md:text-base">Preencha os dados para criar sua conta</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

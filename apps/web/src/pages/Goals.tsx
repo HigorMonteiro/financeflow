@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { goalsService, Goal, CreateGoalData } from '@/services/goals.service';
 import { useUserPagination } from '@/hooks/useUserPagination';
 import { useToast } from '@/hooks/use-toast';
@@ -211,27 +212,24 @@ export function Goals() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Metas</h1>
-              <p className="text-muted-foreground">
-                Gerencie suas metas de economia
-              </p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+          <div className="flex justify-between items-center gap-2">
+            <h1 className="text-xl md:text-3xl font-bold">Metas</h1>
+            <div className="flex items-center gap-2">
+              <GoalFilters
+                status={statusFilter}
+                sortBy={sortBy}
+                onStatusChange={setStatusFilter}
+                onSortChange={setSortBy}
+              />
+              {/* Botão Desktop */}
+              <FloatingActionButton
+                onClick={handleCreateGoal}
+                label="Nova Meta"
+              />
             </div>
-            <Button onClick={handleCreateGoal}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Meta
-            </Button>
           </div>
-
-          <GoalFilters
-            status={statusFilter}
-            sortBy={sortBy}
-            onStatusChange={setStatusFilter}
-            onSortChange={setSortBy}
-          />
 
           {filteredAndSortedGoals.length === 0 ? (
             <div className="text-center py-12">
@@ -248,7 +246,7 @@ export function Goals() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {filteredAndSortedGoals.map((goal) => (
                 <GoalCard
                   key={goal.id}

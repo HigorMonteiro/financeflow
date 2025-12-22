@@ -206,7 +206,7 @@ export function AccountSettings() {
                 {editingId ? 'Editar Conta' : 'Nova Conta'}
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome da Conta *</Label>
                   <Input
@@ -214,6 +214,7 @@ export function AccountSettings() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Ex: Conta Corrente Nubank"
+                    className="min-h-[44px]"
                   />
                 </div>
 
@@ -223,7 +224,7 @@ export function AccountSettings() {
                     value={formData.type}
                     onValueChange={(value) => setFormData({ ...formData, type: value })}
                   >
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="type" className="min-h-[44px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -237,7 +238,7 @@ export function AccountSettings() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="balance">Saldo Inicial</Label>
                   <Input
@@ -284,7 +285,7 @@ export function AccountSettings() {
                   não no mês calendário.
                 </p>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="billingStartDay">Dia de Início</Label>
                     <Select

@@ -86,13 +86,14 @@ export function TransactionForm({
           id="description"
           {...register('description')}
           placeholder="Ex: Compra no supermercado"
+          className="min-h-[44px]"
         />
         {errors.description && (
           <p className="text-sm text-red-500">{errors.description.message}</p>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="amount">Valor *</Label>
           <Input
@@ -101,6 +102,7 @@ export function TransactionForm({
             step="0.01"
             {...register('amount')}
             placeholder="0.00"
+            className="min-h-[44px]"
           />
           {errors.amount && (
             <p className="text-sm text-red-500">{errors.amount.message}</p>
@@ -113,7 +115,7 @@ export function TransactionForm({
             value={watch('type')}
             onValueChange={(value) => setValue('type', value as 'INCOME' | 'EXPENSE')}
           >
-            <SelectTrigger id="type">
+            <SelectTrigger id="type" className="min-h-[44px]">
               <SelectValue placeholder="Selecione o tipo" />
             </SelectTrigger>
             <SelectContent>
@@ -127,14 +129,14 @@ export function TransactionForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="categoryId">Categoria *</Label>
           <Select
             value={watch('categoryId')}
             onValueChange={(value) => setValue('categoryId', value)}
           >
-            <SelectTrigger id="categoryId">
+            <SelectTrigger id="categoryId" className="min-h-[44px]">
               <SelectValue placeholder="Selecione a categoria" />
             </SelectTrigger>
             <SelectContent>
@@ -162,7 +164,7 @@ export function TransactionForm({
             value={watch('accountId')}
             onValueChange={(value) => setValue('accountId', value)}
           >
-            <SelectTrigger id="accountId">
+            <SelectTrigger id="accountId" className="min-h-[44px]">
               <SelectValue placeholder="Selecione a conta" />
             </SelectTrigger>
             <SelectContent>
@@ -181,17 +183,17 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <Label htmlFor="date">Data *</Label>
-        <Input id="date" type="date" {...register('date')} />
+        <Input id="date" type="date" {...register('date')} className="min-h-[44px]" />
         {errors.date && (
           <p className="text-sm text-red-500">{errors.date.message}</p>
         )}
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading} className="w-full sm:w-auto min-h-[44px]">
           Cancelar
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="w-full sm:w-auto min-h-[44px]">
           {isLoading ? 'Salvando...' : transaction ? 'Atualizar' : 'Criar'}
         </Button>
       </div>

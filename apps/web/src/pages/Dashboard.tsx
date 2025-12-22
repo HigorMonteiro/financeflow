@@ -45,18 +45,18 @@ export function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl md:text-3xl font-bold">Dashboard</h1>
+            <p className="hidden md:block text-sm md:text-base text-muted-foreground">
               Visão geral das suas finanças
             </p>
           </div>
 
           {/* Cards de Resumo */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {/* Saldo Total */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -170,22 +170,22 @@ export function Dashboard() {
           )}
 
           {/* Transações Recentes */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Transações Recentes</CardTitle>
               </CardHeader>
               <CardContent>
                 {data?.recentTransactions && data.recentTransactions.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     {data.recentTransactions.map((transaction) => (
                       <div
                         key={transaction.id}
-                        className="flex items-center justify-between p-3 rounded-lg border"
+                        className="flex items-start justify-between p-3 rounded-lg border gap-3"
                       >
-                        <div className="flex-1">
-                          <p className="font-medium">{transaction.description}</p>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm md:text-base truncate">{transaction.description}</p>
+                          <div className="flex flex-wrap items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground mt-1">
                             <span>{format(new Date(transaction.date), 'dd/MM/yyyy')}</span>
                             <span>•</span>
                             <span
@@ -197,14 +197,13 @@ export function Dashboard() {
                             >
                               {transaction.category.name}
                             </span>
+                            <span>•</span>
+                            <span className="truncate">{transaction.account.name}</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-red-600">
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-bold text-sm md:text-base text-red-600">
                             -{formatCurrency(transaction.amount)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {transaction.account.name}
                           </p>
                         </div>
                       </div>

@@ -3,6 +3,7 @@ import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tansta
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { TransactionTable, Transaction } from '@/components/Transactions/TransactionTable';
 import { TransactionFilters, FilterValues } from '@/components/Transactions/TransactionFilters';
+import { TransactionFiltersMobile } from '@/components/Transactions/TransactionFiltersMobile';
 import { TransactionModal } from '@/components/Transactions/TransactionModal';
 import { CSVImportModal } from '@/components/Import/CSVImportModal';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,8 @@ import { accountsService } from '@/services/accounts.service';
 import { useUserPagination } from '@/hooks/useUserPagination';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Loader2 } from 'lucide-react';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
+import { ImportExportActions } from '@/components/Transactions/ImportExportActions';
 
 const initialFilters: FilterValues = {
   search: '',
@@ -352,33 +355,59 @@ export function Transactions() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Transações</h1>
-              <p className="text-muted-foreground">
-                Gerencie suas receitas e despesas
-              </p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+          <div className="flex justify-between items-center gap-2">
+            <h1 className="text-xl md:text-3xl font-bold">Transações</h1>
+            <div className="flex items-center gap-2">
+              {/* Filtros Mobile */}
+              <div className="md:hidden flex items-center gap-2">
+                <TransactionFiltersMobile
+                  categories={categoriesData || []}
+                  accounts={accountsData || []}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  onReset={handleResetFilters}
+                  isLoadingCategories={isLoadingCategories}
+                  isLoadingAccounts={isLoadingAccounts}
+                  categoriesError={categoriesError}
+                  accountsError={accountsError}
+                  activeFiltersCount={
+                    Object.values(filters).filter(
+                      (v) => v !== '' && v !== 'all'
+                    ).length
+                  }
+                />
+                <ImportExportActions
+                  onImport={() => setImportModalOpen(true)}
+                  onExport={() => {
+                    // TODO: Implementar exportação
+                    console.log('Exportar');
+                  }}
+                />
+              </div>
+              {/* Botão Desktop */}
+              <FloatingActionButton
+                onClick={handleCreateTransaction}
+                label="Nova Transação"
+              />
             </div>
-            <Button onClick={handleCreateTransaction}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Transação
-            </Button>
           </div>
 
-          {/* Filtros */}
-          <TransactionFilters
-            categories={categoriesData || []}
-            accounts={accountsData || []}
-            filters={filters}
-            onFiltersChange={setFilters}
-            onReset={handleResetFilters}
-            isLoadingCategories={isLoadingCategories}
-            isLoadingAccounts={isLoadingAccounts}
-            categoriesError={categoriesError}
-            accountsError={accountsError}
-          />
+          {/* Filtros Desktop */}
+          <div className="hidden md:block">
+            <TransactionFilters
+              categories={categoriesData || []}
+              accounts={accountsData || []}
+              filters={filters}
+              onFiltersChange={setFilters}
+              onReset={handleResetFilters}
+              isLoadingCategories={isLoadingCategories}
+              isLoadingAccounts={isLoadingAccounts}
+              categoriesError={categoriesError}
+              accountsError={accountsError}
+            />
+          </div>
 
           <TransactionTable
             transactions={transactions}

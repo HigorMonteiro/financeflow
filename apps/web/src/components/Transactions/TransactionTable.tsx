@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/select';
 import { ArrowUpDown, Download, Upload, Edit, Trash2 } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
+import { TransactionCard } from './TransactionCard';
+import { ImportExportActions } from './ImportExportActions';
 
 export interface Transaction {
   id: string;
@@ -128,45 +130,40 @@ export function TransactionTable({
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Transações</CardTitle>
-          <div className="flex gap-2">
-            {onImport && (
-              <Button onClick={onImport} variant="outline" size="sm">
-                <Upload className="h-4 w-4 mr-2" />
-                Importar CSV
-              </Button>
-            )}
-            {onExport && (
-              <Button onClick={onExport} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
-            )}
-          </div>
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center gap-2">
+          <CardTitle className="text-lg md:text-xl">Transações</CardTitle>
+          {/* Desktop: Ações de Import/Export */}
+          {(onImport || onExport) && (
+            <div className="hidden md:block">
+              <ImportExportActions
+                onImport={onImport}
+                onExport={onExport}
+              />
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
 
         {/* Totais */}
-        <div className="mb-4 grid grid-cols-3 gap-4">
+        <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-            <div className="text-sm text-muted-foreground">Total Receitas</div>
-            <div className="text-lg font-bold text-green-600 dark:text-green-400">
+            <div className="text-xs md:text-sm text-muted-foreground">Total Receitas</div>
+            <div className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
               {formatCurrency(totalIncome.toFixed(2))}
             </div>
           </div>
           <div className="p-3 bg-red-50 dark:bg-red-950 rounded-lg">
-            <div className="text-sm text-muted-foreground">Total Despesas</div>
-            <div className="text-lg font-bold text-red-600 dark:text-red-400">
+            <div className="text-xs md:text-sm text-muted-foreground">Total Despesas</div>
+            <div className="text-base md:text-lg font-bold text-red-600 dark:text-red-400">
               {formatCurrency(totalExpense.toFixed(2))}
             </div>
           </div>
           <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-            <div className="text-sm text-muted-foreground">Saldo</div>
+            <div className="text-xs md:text-sm text-muted-foreground">Saldo</div>
             <div
-              className={`text-lg font-bold ${
+              className={`text-base md:text-lg font-bold ${
                 balance >= 0
                   ? 'text-green-600 dark:text-green-400'
                   : 'text-red-600 dark:text-red-400'
@@ -177,8 +174,26 @@ export function TransactionTable({
           </div>
         </div>
 
-        {/* Tabela estilo Planilha */}
-        <div className="border rounded-lg overflow-hidden">
+        {/* Mobile: Cards View */}
+        <div className="md:hidden space-y-3">
+          {filteredTransactions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhuma transação encontrada
+            </div>
+          ) : (
+            filteredTransactions.map((transaction) => (
+              <TransactionCard
+                key={transaction.id}
+                transaction={transaction}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Desktop: Table View */}
+        <div className="hidden md:block border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead className="bg-muted">
