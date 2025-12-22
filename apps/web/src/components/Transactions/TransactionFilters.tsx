@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, X, Calendar } from 'lucide-react';
+import { Toggle } from '@/components/ui/toggle';
+import { Filter, X, Calendar, Search, Tag, Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale/pt-BR';
 
 export interface FilterValues {
   search: string;
@@ -49,17 +52,150 @@ export function TransactionFilters({
   accountsError,
 }: TransactionFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const hasActiveFilters =
-    filters.search ||
-    filters.type !== 'all' ||
-    filters.categoryId ||
-    filters.accountId ||
-    filters.startDate ||
-    filters.endDate ||
-    filters.minAmount ||
-    filters.maxAmount ||
-    filters.month ||
-    filters.year;
+  
+  const activeFilters = useMemo(() => {
+    const active: Array<{ key: keyof FilterValues; label: string; icon: React.ReactNode }> = [];
+    
+    if (filters.search) {
+      active.push({
+        key: 'search',
+        label: `Busca: "${filters.search}"`,
+        icon: <Search className="h-3 w-3" />,
+      });
+    }
+    
+    if (filters.type !== 'all') {
+      active.push({
+        key: 'type',
+        label: filters.type === 'INCOME' ? 'Receitas' : 'Despesas',
+        icon: filters.type === 'INCOME' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />,
+      });
+    }
+    
+    if (filters.categoryId) {
+      const category = categories.find((c) => c.id === filters.categoryId);
+      if (category) {
+        active.push({
+          key: 'categoryId',
+          label: category.name,
+          icon: <Tag className="h-3 w-3" />,
+        });
+      }
+    }
+    
+    if (filters.accountId) {
+      const account = accounts.find((a) => a.id === filters.accountId);
+      if (account) {
+        active.push({
+          key: 'accountId',
+          label: account.name,
+          icon: <Wallet className="h-3 w-3" />,
+        });
+      }
+    }
+    
+    if (filters.month && filters.year) {
+      const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      const monthIndex = parseInt(filters.month) - 1;
+      active.push({
+        key: 'month',
+        label: `${monthNames[monthIndex]} ${filters.year}`,
+        icon: <Calendar className="h-3 w-3" />,
+      });
+    } else if (filters.month) {
+      const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      const monthIndex = parseInt(filters.month) - 1;
+      active.push({
+        key: 'month',
+        label: monthNames[monthIndex],
+        icon: <Calendar className="h-3 w-3" />,
+      });
+    } else if (filters.year) {
+      active.push({
+        key: 'year',
+        label: `Ano: ${filters.year}`,
+        icon: <Calendar className="h-3 w-3" />,
+      });
+    }
+    
+    if (filters.startDate && filters.endDate) {
+      const start = format(new Date(filters.startDate), "dd 'de' MMM", { locale: ptBR });
+      const end = format(new Date(filters.endDate), "dd 'de' MMM 'de' yyyy", { locale: ptBR });
+      active.push({
+        key: 'startDate',
+        label: `${start} - ${end}`,
+        icon: <Calendar className="h-3 w-3" />,
+      });
+    } else if (filters.startDate) {
+      const start = format(new Date(filters.startDate), "dd 'de' MMM 'de' yyyy", { locale: ptBR });
+      active.push({
+        key: 'startDate',
+        label: `A partir de ${start}`,
+        icon: <Calendar className="h-3 w-3" />,
+      });
+    } else if (filters.endDate) {
+      const end = format(new Date(filters.endDate), "dd 'de' MMM 'de' yyyy", { locale: ptBR });
+      active.push({
+        key: 'endDate',
+        label: `Até ${end}`,
+        icon: <Calendar className="h-3 w-3" />,
+      });
+    }
+    
+    if (filters.minAmount) {
+      const amount = parseFloat(filters.minAmount).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      });
+      active.push({
+        key: 'minAmount',
+        label: `Mín: ${amount}`,
+        icon: <DollarSign className="h-3 w-3" />,
+      });
+    }
+    
+    if (filters.maxAmount) {
+      const amount = parseFloat(filters.maxAmount).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      });
+      active.push({
+        key: 'maxAmount',
+        label: `Máx: ${amount}`,
+        icon: <DollarSign className="h-3 w-3" />,
+      });
+    }
+    
+    return active;
+  }, [filters, categories, accounts]);
+  
+  const hasActiveFilters = activeFilters.length > 0;
+  
+  const removeFilter = (key: keyof FilterValues) => {
+    const newFilters = { ...filters };
+    
+    if (key === 'type') {
+      newFilters[key] = 'all' as any;
+    } else if (key === 'month') {
+      newFilters.month = '';
+      newFilters.year = '';
+    } else if (key === 'year') {
+      newFilters.year = '';
+    } else if (key === 'startDate') {
+      newFilters.startDate = '';
+      newFilters.endDate = '';
+    } else {
+      newFilters[key] = '' as any;
+    }
+    
+    onFiltersChange(newFilters);
+  };
 
   const handleFilterChange = (key: keyof FilterValues, value: string) => {
     const newFilters = { ...filters, [key]: value };
@@ -90,7 +226,7 @@ export function TransactionFilters({
             Filtros
             {hasActiveFilters && (
               <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">
-                Ativo
+                {activeFilters.length} {activeFilters.length === 1 ? 'ativo' : 'ativos'}
               </span>
             )}
           </CardTitle>
@@ -98,7 +234,7 @@ export function TransactionFilters({
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={onReset}>
                 <X className="h-4 w-4 mr-1" />
-                Limpar
+                Limpar todos
               </Button>
             )}
             <Button
@@ -111,6 +247,35 @@ export function TransactionFilters({
           </div>
         </div>
       </CardHeader>
+      
+      {/* Filtros Ativos */}
+      {hasActiveFilters && (
+        <CardContent className="pt-0 pb-4 border-b">
+          <div className="flex flex-wrap gap-2">
+            {activeFilters.map((filter) => (
+              <Toggle
+                key={filter.key}
+                pressed={true}
+                onPressedChange={(pressed: boolean) => {
+                  if (!pressed) {
+                    removeFilter(filter.key);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary hover:bg-primary/90"
+                aria-label={`Remover filtro: ${filter.label}`}
+              >
+                <span className="flex items-center gap-1.5">
+                  {filter.icon}
+                  <span>{filter.label}</span>
+                  <X className="h-3 w-3 ml-1" />
+                </span>
+              </Toggle>
+            ))}
+          </div>
+        </CardContent>
+      )}
 
       {isOpen && (
         <CardContent>
