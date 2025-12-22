@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,8 +8,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Upload, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Upload, FileText, AlertCircle, CheckCircle2, CreditCard } from 'lucide-react';
 import api from '@/lib/api';
+import { cardsService } from '@/services/cards.service';
 
 interface CSVImportModalProps {
   open: boolean;
@@ -17,14 +26,40 @@ interface CSVImportModalProps {
   onSuccess?: () => void;
 }
 
+const BANK_DISPLAY_NAMES: Record<string, string> = {
+  NUBANK: 'Nubank',
+  INTER: 'Inter',
+  ITAU: 'Itaú',
+  SANTANDER: 'Santander',
+  BRADESCO: 'Bradesco',
+  CAIXA: 'Caixa Econômica',
+  BB: 'Banco do Brasil',
+  UNKNOWN: 'Desconhecido',
+};
+
 export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState<string>('');
+  const [detectedBank, setDetectedBank] = useState<{
+    bank: string;
+    confidence: number;
+    indicators: string[];
+  } | null>(null);
+
+  const { data: cards } = useQuery({
+    queryKey: ['cards'],
+    queryFn: cardsService.getAll,
+    enabled: open,
+    retry: false,
+    onError: (error) => {
+      // Ignorar erro se a tabela de cartões não existir ainda
+      console.warn('Não foi possível carregar cartões:', error);
+    },
+  });
 
   const importMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append('file', file);
+    mutationFn: async (formData: FormData) => {
       const response = await api.post('/import/csv', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -33,13 +68,43 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
       return response.data;
     },
     onSuccess: (data) => {
+      if (data.detectedBank) {
+        setDetectedBank(data.detectedBank);
+      }
       setFile(null);
       onSuccess?.();
       setTimeout(() => {
         onOpenChange(false);
+        setDetectedBank(null);
+        setSelectedCardId('');
       }, 2000);
     },
   });
+
+  // Detectar banco quando arquivo é selecionado
+  useEffect(() => {
+    if (file && !importMutation.data) {
+      const detectBankMutation = async () => {
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const response = await api.post('/import/detect-bank', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          setDetectedBank({
+            bank: response.data.bank,
+            confidence: response.data.confidence,
+            indicators: response.data.indicators,
+          });
+        } catch (error) {
+          // Ignorar erro, apenas tentar detectar
+        }
+      };
+      detectBankMutation();
+    }
+  }, [file]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -72,7 +137,12 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
 
   const handleSubmit = () => {
     if (file) {
-      importMutation.mutate(file);
+      const formData = new FormData();
+      formData.append('file', file);
+      if (selectedCardId) {
+        formData.append('cardId', selectedCardId);
+      }
+      importMutation.mutate(formData as any);
     }
   };
 
@@ -107,10 +177,29 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
                 <p className="text-sm text-muted-foreground">
                   {(file.size / 1024).toFixed(2)} KB
                 </p>
+                {detectedBank && (
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                      <CreditCard className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        Banco detectado: {BANK_DISPLAY_NAMES[detectedBank.bank] || detectedBank.bank}
+                      </span>
+                    </div>
+                    {detectedBank.confidence < 0.7 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Confiança: {(detectedBank.confidence * 100).toFixed(0)}%
+                      </p>
+                    )}
+                  </div>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setFile(null)}
+                  onClick={() => {
+                    setFile(null);
+                    setDetectedBank(null);
+                    setSelectedCardId('');
+                  }}
                   className="mt-2"
                 >
                   Remover arquivo
@@ -141,6 +230,38 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
               </div>
             )}
           </div>
+
+          {/* Seleção de Cartão (quando banco detectado) */}
+          {file && detectedBank && cards && cards.length > 0 && (
+            <div className="space-y-2">
+              <Label>Associar a um cartão (opcional)</Label>
+              <Select value={selectedCardId} onValueChange={setSelectedCardId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um cartão ou deixe em branco" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Não associar a cartão</SelectItem>
+                  {cards
+                    .filter(
+                      (card) =>
+                        card.isActive &&
+                        (card.bank === detectedBank.bank || !selectedCardId)
+                    )
+                    .map((card) => (
+                      <SelectItem key={card.id} value={card.id}>
+                        {card.name} ({BANK_DISPLAY_NAMES[card.bank] || card.bank})
+                        {card.lastFourDigits && ` • Final ${card.lastFourDigits}`}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                O sistema detectou que este CSV pertence ao{' '}
+                <strong>{BANK_DISPLAY_NAMES[detectedBank.bank] || detectedBank.bank}</strong>.
+                Você pode associar as transações a um cartão específico.
+              </p>
+            </div>
+          )}
 
           {/* Resultado da Importação */}
           {importMutation.isSuccess && importMutation.data && (

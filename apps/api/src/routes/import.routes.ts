@@ -24,5 +24,14 @@ router.post(
   }
 );
 
+router.post(
+  '/detect-bank',
+  authMiddleware,
+  uploadMiddleware.single('file'),
+  (req, res) => {
+    importController.detectBank(req, res);
+  }
+);
+
 export default router;
 

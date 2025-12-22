@@ -1,5 +1,6 @@
 import { prisma } from '../config/database';
 import { CategoryType, TransactionType, AccountType } from '../types/enums';
+import { CardDetectionService, BankType } from './card-detection.service';
 
 export interface CSVImportResult {
   success: boolean;
@@ -9,6 +10,11 @@ export interface CSVImportResult {
     transactions: number;
   };
   errors: string[];
+  detectedBank?: {
+    bank: string;
+    confidence: number;
+    indicators: string[];
+  };
 }
 
 export class CSVImportService {
@@ -16,7 +22,7 @@ export class CSVImportService {
    * Importa dados de um arquivo CSV
    * Formato esperado: Data,Descrição,Valor,Categoria,Conta
    */
-  async importFromCSV(userId: string, csvContent: string): Promise<CSVImportResult> {
+  async importFromCSV(userId: string, csvContent: string, cardId?: string | null): Promise<CSVImportResult> {
     const result: CSVImportResult = {
       success: true,
       imported: {
@@ -42,10 +48,22 @@ export class CSVImportService {
         h.trim().toLowerCase()
       );
 
+      // Detectar banco do CSV
+      const cardDetectionService = new CardDetectionService();
+      const sampleLines = lines.slice(1, Math.min(6, lines.length)); // Primeiras 5 linhas de dados
+      const bankDetection = cardDetectionService.detectBankFromCSV(headers, sampleLines);
+      
+      result.detectedBank = {
+        bank: bankDetection.bank,
+        confidence: bankDetection.confidence,
+        indicators: bankDetection.indicators,
+      };
+
       // Log para debug (apenas em desenvolvimento)
       if (process.env.NODE_ENV === 'development') {
         console.log('CSV Headers encontrados:', headers);
         console.log('Delimitador detectado:', delimiter);
+        console.log('Banco detectado:', bankDetection.bank, 'Confiança:', bankDetection.confidence);
       }
 
       // Encontrar índices das colunas
@@ -152,16 +170,32 @@ export class CSVImportService {
           }
 
           // Parsear valor (substituir vírgula por ponto para parseFloat)
-          let amount = parseFloat(amountStr.replace(',', '.'));
-          if (isNaN(amount) || amount === 0) {
-            result.errors.push(`Linha ${i + 1}: Valor inválido: ${originalAmountStr}`);
+          // Tratar múltiplos formatos: "1.234,56", "1,234.56", "1234,56", "1234.56"
+          let normalizedAmount = amountStr;
+          // Se tem ponto e vírgula, assumir formato brasileiro (1.234,56)
+          if (normalizedAmount.includes('.') && normalizedAmount.includes(',')) {
+            normalizedAmount = normalizedAmount.replace(/\./g, '').replace(',', '.');
+          } else if (normalizedAmount.includes(',')) {
+            // Apenas vírgula, pode ser decimal brasileiro
+            normalizedAmount = normalizedAmount.replace(',', '.');
+          }
+          
+          let amount = parseFloat(normalizedAmount);
+          if (isNaN(amount)) {
+            result.errors.push(`Linha ${i + 1}: Valor inválido: "${originalAmountStr}" (normalizado: "${normalizedAmount}")`);
+            continue;
+          }
+          
+          // Permitir valores zero, mas avisar
+          if (amount === 0) {
+            result.errors.push(`Linha ${i + 1}: Valor zero ignorado: ${description}`);
             continue;
           }
 
           // Determinar tipo de transação
           // Formato Nubank: valores negativos são receitas (pagamentos recebidos)
           // Valores positivos são despesas (gastos)
-          let transactionType = TransactionType.EXPENSE;
+          let transactionType: TransactionType = TransactionType.EXPENSE;
           
           // No formato Nubank, valores negativos são receitas
           if (amount < 0) {
@@ -178,25 +212,26 @@ export class CSVImportService {
             transactionType = TransactionType.INCOME;
           }
 
-          // Buscar ou criar categoria
+          // Buscar ou criar categoria (pode ser do usuário ou padrão)
           let categoryId = categoriesMap.get(categoryName);
           if (!categoryId) {
             let category = await prisma.category.findFirst({
               where: {
-                userId,
                 name: categoryName,
+                OR: [{ userId }, { isDefault: true }],
               },
             });
 
             if (!category) {
+              const categoryType = transactionType === TransactionType.INCOME 
+                ? CategoryType.INCOME 
+                : CategoryType.EXPENSE;
+              
               category = await prisma.category.create({
                 data: {
                   userId,
                   name: categoryName,
-                  type:
-                    transactionType === TransactionType.INCOME
-                      ? CategoryType.INCOME
-                      : CategoryType.EXPENSE,
+                  type: categoryType,
                   color: '#3B82F6',
                   icon: 'receipt',
                 },
@@ -235,17 +270,23 @@ export class CSVImportService {
 
           // Criar transação
           // amount já está positivo se era negativo (receita do Nubank)
+          const transactionData: any = {
+            userId,
+            accountId: account.id,
+            categoryId,
+            amount: amount.toFixed(2),
+            type: transactionType,
+            description,
+            date,
+            tags: '[]',
+          };
+          
+          if (cardId) {
+            transactionData.cardId = cardId;
+          }
+          
           await prisma.transaction.create({
-            data: {
-              userId,
-              accountId: account.id,
-              categoryId,
-              amount: amount.toFixed(2),
-              type: transactionType,
-              description,
-              date,
-              tags: '[]',
-            },
+            data: transactionData,
           });
 
           result.imported.transactions++;
