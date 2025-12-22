@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { analyticsService } from '@/services/analytics.service';
-import { TrendingUp, TrendingDown, Wallet, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Target, ArrowRight } from 'lucide-react';
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: analyticsService.getDashboard,
@@ -126,31 +129,44 @@ export function Dashboard() {
 
           {/* Metas */}
           {data?.goals && data.goals.length > 0 && (
-            <Card>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/goals')}>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Metas
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Metas
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate('/goals'); }}>
+                    Ver todas
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {data.goals.map((goal) => (
-                    <div key={goal.id}>
+                  {data.goals.slice(0, 3).map((goal) => (
+                    <div key={goal.id} className="hover:bg-muted/50 p-2 rounded transition-colors">
                       <div className="flex justify-between text-sm mb-1">
-                        <span>{goal.name}</span>
+                        <span className="font-medium">{goal.name}</span>
                         <span>
                           {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
                         <div
-                          className="bg-primary h-2 rounded-full transition-all"
+                          className={`h-2 rounded-full transition-all ${
+                            goal.progress >= 100 ? 'bg-green-500' : 'bg-primary'
+                          }`}
                           style={{ width: `${goal.progress}%` }}
                         />
                       </div>
                     </div>
                   ))}
+                  {data.goals.length > 3 && (
+                    <p className="text-sm text-muted-foreground text-center pt-2">
+                      +{data.goals.length - 3} {data.goals.length - 3 === 1 ? 'meta' : 'metas'} restantes
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

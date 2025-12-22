@@ -114,18 +114,34 @@ pnpm test
 
 ## 🎯 Funcionalidades Implementadas
 
-✅ Autenticação (Registro, Login, JWT)  
-✅ Dashboard básico  
-✅ Estrutura de rotas protegidas  
-✅ Componentes UI base (shadcn/ui)  
-✅ Integração React Query + Zustand  
+### ✅ Core
+- ✅ Autenticação completa (Registro, Login, JWT)
+- ✅ Dashboard interativo com métricas financeiras
+- ✅ Estrutura de rotas protegidas
+- ✅ Componentes UI base (shadcn/ui)
+- ✅ Integração React Query + Zustand
 
-## 🚧 Próximos Passos
+### ✅ Gestão Financeira
+- ✅ **CRUD completo de Transações** (criar, editar, deletar, filtrar)
+- ✅ **CRUD completo de Contas** (backend completo, integrado no sistema)
+- ✅ **CRUD completo de Categorias** (com categorias padrão e personalizadas)
+- ✅ **Importação de CSV/Excel** (com detecção automática de cartão)
+- ✅ **Gestão de Cartões de Crédito** (CRUD completo)
 
-- [ ] CRUD de Transações
-- [ ] CRUD de Contas
-- [ ] CRUD de Categorias
-- [ ] Gráficos e Analytics
-- [ ] Metas de Economia
-- [ ] Orçamentos
+### ✅ Analytics e Visualizações
+- ✅ **Dashboard** com resumo financeiro e transações recentes
+- ✅ **Gráficos de Tendências** (diário, semanal, mensal)
+- ✅ **Fluxo de Caixa** (visualização de 3, 6, 12 meses)
+- ✅ **Análise por Categoria** (gráficos de pizza para receitas/despesas)
+- ✅ **Comparação de Períodos** (mensal, trimestral, anual)
+
+### ⚠️ Em Desenvolvimento
+- ⚠️ **Metas de Economia** (modelo existe, falta CRUD completo)
+  - ✅ Exibição no Dashboard
+  - ❌ Página de gerenciamento ainda não implementada
+
+### ❌ Planejadas
+- ❌ **Orçamentos** (modelo no schema, aguardando implementação)
+
+> 📊 **Para ver o status detalhado de todas as features, consulte:** [`FEATURES_STATUS.md`](./FEATURES_STATUS.md)
 
