@@ -116,6 +116,7 @@ pnpm test
 
 ### ✅ Core
 - ✅ Autenticação completa (Registro, Login, JWT)
+  - ✅ Funcionalidade "Lembrar usuário e senha" no login
 - ✅ Dashboard interativo com métricas financeiras
 - ✅ Estrutura de rotas protegidas
 - ✅ Componentes UI base (shadcn/ui)
@@ -155,8 +156,19 @@ pnpm test
 - ✅ **Scroll infinito** com paginação configurável
 - ✅ **Exibição no Dashboard** com link para página completa
 
-### ❌ Planejadas
-- ❌ **Orçamentos** (modelo no schema, aguardando implementação)
+### ✅ Orçamentos
+- ✅ **CRUD completo de Orçamentos** (criar, editar, deletar, visualizar)
+- ✅ **Orçamentos por categoria** com períodos configuráveis (Semanal, Mensal, Anual)
+- ✅ **Cálculo automático de gastos** baseado em transações reais do período
+- ✅ **Visualização de progresso** com cores indicativas:
+  - Verde: < 80% utilizado (dentro do orçamento)
+  - Amarelo: 80-100% utilizado (próximo do limite)
+  - Vermelho: > 100% utilizado (excedido)
+- ✅ **Filtros avançados** por status e período
+- ✅ **Ordenação** por período, progresso, valor ou data de criação
+- ✅ **Exibição de valor restante ou excedido**
+- ✅ **Validação de duplicatas** (mesma categoria no mesmo período)
+- ✅ **Scroll infinito** com paginação configurável
 
 ## 🎨 Funcionalidades de UX/UI
 
