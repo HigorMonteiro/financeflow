@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authService } from '@/services/auth.service';
+import { useToast } from '@/hooks/use-toast';
 import { Save, Loader2 } from 'lucide-react';
 
 export function UserSettings() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -40,7 +42,11 @@ export function UserSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      alert('Perfil atualizado com sucesso!');
+      toast({
+        variant: 'success',
+        title: 'Perfil atualizado!',
+        description: 'Suas informações foram atualizadas com sucesso.',
+      });
       setFormData({
         ...formData,
         currentPassword: '',
@@ -49,7 +55,11 @@ export function UserSettings() {
       });
     },
     onError: (error: any) => {
-      alert(error.response?.data?.error || 'Erro ao atualizar perfil');
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar perfil',
+        description: error.response?.data?.error || 'Não foi possível atualizar o perfil. Tente novamente.',
+      });
     },
   });
 
@@ -57,7 +67,11 @@ export function UserSettings() {
     e.preventDefault();
     
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-      alert('As senhas não coincidem!');
+      toast({
+        variant: 'destructive',
+        title: 'Senhas não coincidem',
+        description: 'As senhas informadas não são iguais. Verifique e tente novamente.',
+      });
       return;
     }
 

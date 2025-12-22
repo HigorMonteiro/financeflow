@@ -16,6 +16,7 @@ import { Plus, Loader2 } from 'lucide-react';
 import { budgetsService, Budget, CreateBudgetData, BudgetPeriod } from '@/services/budgets.service';
 import { categoriesService } from '@/services/categories.service';
 import { useUserPagination } from '@/hooks/useUserPagination';
+import { useToast } from '@/hooks/use-toast';
 
 export function Budgets() {
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
@@ -27,6 +28,7 @@ export function Budgets() {
   const [periodFilter, setPeriodFilter] = useState<BudgetPeriod | 'all'>('all');
   const queryClient = useQueryClient();
   const itemsPerPage = useUserPagination();
+  const { toast } = useToast();
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
@@ -63,6 +65,18 @@ export function Budgets() {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       setBudgetModalOpen(false);
       setEditingBudget(undefined);
+      toast({
+        variant: 'success',
+        title: 'Orçamento criado!',
+        description: 'Seu orçamento foi criado com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar orçamento',
+        description: error.response?.data?.error || 'Não foi possível criar o orçamento. Tente novamente.',
+      });
     },
   });
 
@@ -74,6 +88,18 @@ export function Budgets() {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       setBudgetModalOpen(false);
       setEditingBudget(undefined);
+      toast({
+        variant: 'success',
+        title: 'Orçamento atualizado!',
+        description: 'Seu orçamento foi atualizado com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar orçamento',
+        description: error.response?.data?.error || 'Não foi possível atualizar o orçamento. Tente novamente.',
+      });
     },
   });
 
@@ -84,6 +110,18 @@ export function Budgets() {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       setDeleteDialogOpen(false);
       setBudgetToDelete(null);
+      toast({
+        variant: 'success',
+        title: 'Orçamento excluído!',
+        description: 'O orçamento foi excluído com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir orçamento',
+        description: error.response?.data?.error || 'Não foi possível excluir o orçamento. Tente novamente.',
+      });
     },
   });
 

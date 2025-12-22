@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import { goalsService, Goal, CreateGoalData } from '@/services/goals.service';
 import { useUserPagination } from '@/hooks/useUserPagination';
+import { useToast } from '@/hooks/use-toast';
 
 export function Goals() {
   const [goalModalOpen, setGoalModalOpen] = useState(false);
@@ -56,6 +57,18 @@ export function Goals() {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       setGoalModalOpen(false);
       setEditingGoal(undefined);
+      toast({
+        variant: 'success',
+        title: 'Meta criada!',
+        description: 'Sua meta foi criada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar meta',
+        description: error.response?.data?.error || 'Não foi possível criar a meta. Tente novamente.',
+      });
     },
   });
 
@@ -67,6 +80,18 @@ export function Goals() {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       setGoalModalOpen(false);
       setEditingGoal(undefined);
+      toast({
+        variant: 'success',
+        title: 'Meta atualizada!',
+        description: 'Sua meta foi atualizada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar meta',
+        description: error.response?.data?.error || 'Não foi possível atualizar a meta. Tente novamente.',
+      });
     },
   });
 
@@ -77,6 +102,18 @@ export function Goals() {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       setDeleteDialogOpen(false);
       setGoalToDelete(null);
+      toast({
+        variant: 'success',
+        title: 'Meta excluída!',
+        description: 'A meta foi excluída com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir meta',
+        description: error.response?.data?.error || 'Não foi possível excluir a meta. Tente novamente.',
+      });
     },
   });
 

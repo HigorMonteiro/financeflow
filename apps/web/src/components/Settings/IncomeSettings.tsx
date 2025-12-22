@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import { Save, Loader2 } from 'lucide-react';
 
 export function IncomeSettings() {
+  const { toast } = useToast();
   const [monthlyIncome, setMonthlyIncome] = useState('');
 
   useEffect(() => {
@@ -19,7 +21,11 @@ export function IncomeSettings() {
   const handleSave = () => {
     localStorage.setItem('monthlyIncome', monthlyIncome);
     // TODO: Salvar na API quando endpoint estiver disponível
-    alert('Receita mensal salva com sucesso!');
+    toast({
+      variant: 'success',
+      title: 'Receita salva!',
+      description: 'Receita mensal salva com sucesso.',
+    });
   };
 
   const formatCurrency = (value: string) => {

@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { accountsService, Account } from '@/services/accounts.service';
+import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit2, Trash2, Save, X, Loader2, Calendar } from 'lucide-react';
 
 const ACCOUNT_TYPES = [
@@ -33,6 +34,7 @@ const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 
 export function AccountSettings() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
@@ -62,6 +64,18 @@ export function AccountSettings() {
         billingStartDay: null,
         billingEndDay: null,
       });
+      toast({
+        variant: 'success',
+        title: 'Conta criada!',
+        description: 'A conta foi criada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar conta',
+        description: error.response?.data?.error || 'Não foi possível criar a conta. Tente novamente.',
+      });
     },
   });
 
@@ -72,6 +86,18 @@ export function AccountSettings() {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       setEditingId(null);
+      toast({
+        variant: 'success',
+        title: 'Conta atualizada!',
+        description: 'A conta foi atualizada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar conta',
+        description: error.response?.data?.error || 'Não foi possível atualizar a conta. Tente novamente.',
+      });
     },
   });
 
@@ -80,6 +106,18 @@ export function AccountSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast({
+        variant: 'success',
+        title: 'Conta excluída!',
+        description: 'A conta foi excluída com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir conta',
+        description: error.response?.data?.error || 'Não foi possível excluir a conta. Tente novamente.',
+      });
     },
   });
 

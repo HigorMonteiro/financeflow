@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import { Save, Loader2 } from 'lucide-react';
 
 export function SavingsSettings() {
+  const { toast } = useToast();
   const [savings, setSavings] = useState('');
 
   useEffect(() => {
@@ -19,7 +21,11 @@ export function SavingsSettings() {
   const handleSave = () => {
     localStorage.setItem('savings', savings);
     // TODO: Salvar na API quando endpoint estiver disponível
-    alert('Dinheiro guardado salvo com sucesso!');
+    toast({
+      variant: 'success',
+      title: 'Valor salvo!',
+      description: 'Dinheiro guardado salvo com sucesso.',
+    });
   };
 
   const formatCurrency = (value: string) => {

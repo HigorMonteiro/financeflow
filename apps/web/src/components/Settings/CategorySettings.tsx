@@ -12,11 +12,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { categoriesService } from '@/services/categories.service';
+import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Edit, Save, X, Loader2 } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
 
 export function CategorySettings() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
@@ -39,6 +41,18 @@ export function CategorySettings() {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       setIsCreating(false);
       setFormData({ name: '', type: 'EXPENSE', color: '#3B82F6', icon: 'Receipt', isDefault: false });
+      toast({
+        variant: 'success',
+        title: 'Categoria criada!',
+        description: 'A categoria foi criada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar categoria',
+        description: error.response?.data?.error || 'Não foi possível criar a categoria. Tente novamente.',
+      });
     },
   });
 
@@ -47,6 +61,18 @@ export function CategorySettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       setEditingId(null);
+      toast({
+        variant: 'success',
+        title: 'Categoria atualizada!',
+        description: 'A categoria foi atualizada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar categoria',
+        description: error.response?.data?.error || 'Não foi possível atualizar a categoria. Tente novamente.',
+      });
     },
   });
 
@@ -54,6 +80,18 @@ export function CategorySettings() {
     mutationFn: categoriesService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast({
+        variant: 'success',
+        title: 'Categoria excluída!',
+        description: 'A categoria foi excluída com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir categoria',
+        description: error.response?.data?.error || 'Não foi possível excluir a categoria. Tente novamente.',
+      });
     },
   });
 
@@ -68,7 +106,11 @@ export function CategorySettings() {
   const handleEdit = (category: any) => {
     // Não permitir editar categorias padrão
     if (category.isDefault) {
-      alert('Não é possível editar categorias padrão do sistema');
+      toast({
+        variant: 'warning',
+        title: 'Ação não permitida',
+        description: 'Não é possível editar categorias padrão do sistema.',
+      });
       return;
     }
     

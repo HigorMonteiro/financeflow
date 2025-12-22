@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -26,6 +27,7 @@ export function Login() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
+  const { toast } = useToast();
 
   const {
     register,
@@ -56,10 +58,21 @@ export function Login() {
     mutationFn: authService.login,
     onSuccess: (data) => {
       setAuth(data.user, data.token);
+      toast({
+        variant: 'success',
+        title: 'Login realizado!',
+        description: 'Bem-vindo de volta!',
+      });
       navigate('/dashboard');
     },
     onError: (err: any) => {
-      setError(err.response?.data?.error || 'Erro ao fazer login');
+      const errorMessage = err.response?.data?.error || 'Erro ao fazer login';
+      setError(errorMessage);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao fazer login',
+        description: errorMessage,
+      });
     },
   });
 

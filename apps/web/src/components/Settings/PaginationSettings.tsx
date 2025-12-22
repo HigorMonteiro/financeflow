@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { authService } from '@/services/auth.service';
+import { useToast } from '@/hooks/use-toast';
 import { Save, Loader2, List } from 'lucide-react';
 
 const ITEMS_PER_PAGE_OPTIONS = [
@@ -23,6 +24,7 @@ const ITEMS_PER_PAGE_OPTIONS = [
 export function PaginationSettings() {
   const queryClient = useQueryClient();
   const [itemsPerPage, setItemsPerPage] = useState<number>(50);
+  const { toast } = useToast();
 
   const { data: userData, isLoading } = useQuery({
     queryKey: ['user'],
@@ -41,10 +43,18 @@ export function PaginationSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      alert('Preferência de paginação salva com sucesso!');
+      toast({
+        variant: 'success',
+        title: 'Preferência salva!',
+        description: 'Sua preferência de paginação foi salva com sucesso.',
+      });
     },
     onError: (error: any) => {
-      alert(error.response?.data?.error || 'Erro ao salvar preferência');
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao salvar preferência',
+        description: error.response?.data?.error || 'Não foi possível salvar a preferência. Tente novamente.',
+      });
     },
   });
 

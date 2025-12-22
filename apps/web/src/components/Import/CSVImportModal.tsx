@@ -19,6 +19,7 @@ import {
 import { Upload, FileText, AlertCircle, CheckCircle2, CreditCard } from 'lucide-react';
 import api from '@/lib/api';
 import { cardsService } from '@/services/cards.service';
+import { useToast } from '@/hooks/use-toast';
 
 interface CSVImportModalProps {
   open: boolean;
@@ -38,6 +39,7 @@ const BANK_DISPLAY_NAMES: Record<string, string> = {
 };
 
 export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModalProps) {
+  const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string>('none');
@@ -69,11 +71,23 @@ export function CSVImportModal({ open, onOpenChange, onSuccess }: CSVImportModal
       }
       setFile(null);
       onSuccess?.();
+      toast({
+        variant: 'success',
+        title: 'Importação concluída!',
+        description: `${data.importedCount || 0} transações foram importadas com sucesso.`,
+      });
       setTimeout(() => {
         onOpenChange(false);
         setDetectedBank(null);
         setSelectedCardId('none');
       }, 2000);
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao importar arquivo',
+        description: error.response?.data?.error || 'Não foi possível importar o arquivo. Verifique o formato e tente novamente.',
+      });
     },
   });
 

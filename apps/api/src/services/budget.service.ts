@@ -1,5 +1,7 @@
 import { prisma } from '../config/database';
 import { AppError } from '../middlewares/error.middleware';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale/pt-BR';
 
 export type BudgetPeriod = 'MONTHLY' | 'YEARLY' | 'WEEKLY';
 
@@ -181,42 +183,96 @@ export class BudgetService {
 
     // Verificar se já existe orçamento para esta categoria no mesmo período
     const startDate = new Date(data.startDate);
+    // Normalizar para início do dia (00:00:00)
+    startDate.setHours(0, 0, 0, 0);
+    
     let endDate: Date;
 
     switch (data.period) {
       case 'WEEKLY':
         endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + 7);
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'MONTHLY':
         endDate = new Date(startDate);
         endDate.setMonth(endDate.getMonth() + 1);
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'YEARLY':
         endDate = new Date(startDate);
         endDate.setFullYear(endDate.getFullYear() + 1);
+        endDate.setHours(23, 59, 59, 999);
         break;
       default:
         endDate = new Date(startDate);
         endDate.setMonth(endDate.getMonth() + 1);
+        endDate.setHours(23, 59, 59, 999);
     }
 
-    const existingBudget = await prisma.budget.findFirst({
+    // Buscar todos os orçamentos da categoria para verificar sobreposição
+    const existingBudgets = await prisma.budget.findMany({
       where: {
         userId,
         categoryId: data.categoryId,
-        startDate: {
-          gte: startDate,
-          lt: endDate,
-        },
+      },
+      select: {
+        startDate: true,
+        period: true,
       },
     });
 
-    if (existingBudget) {
-      throw new AppError(
-        400,
-        'Já existe um orçamento para esta categoria neste período'
-      );
+    // Verificar se algum orçamento existente sobrepõe o período do novo
+    for (const existing of existingBudgets) {
+      let existingEndDate: Date;
+      const existingStartDate = new Date(existing.startDate);
+      // Normalizar para início do dia
+      existingStartDate.setHours(0, 0, 0, 0);
+
+      switch (existing.period) {
+        case 'WEEKLY':
+          existingEndDate = new Date(existingStartDate);
+          existingEndDate.setDate(existingEndDate.getDate() + 7);
+          existingEndDate.setHours(23, 59, 59, 999);
+          break;
+        case 'MONTHLY':
+          existingEndDate = new Date(existingStartDate);
+          existingEndDate.setMonth(existingEndDate.getMonth() + 1);
+          existingEndDate.setHours(23, 59, 59, 999);
+          break;
+        case 'YEARLY':
+          existingEndDate = new Date(existingStartDate);
+          existingEndDate.setFullYear(existingEndDate.getFullYear() + 1);
+          existingEndDate.setHours(23, 59, 59, 999);
+          break;
+        default:
+          existingEndDate = new Date(existingStartDate);
+          existingEndDate.setMonth(existingEndDate.getMonth() + 1);
+          existingEndDate.setHours(23, 59, 59, 999);
+      }
+
+      // Verificar sobreposição: períodos se sobrepõem se:
+      // O novo período começa antes do existente terminar E termina depois do existente começar
+      // Mas não se são exatamente adjacentes (um termina quando o outro começa)
+      const hasOverlap = startDate.getTime() < existingEndDate.getTime() && 
+                         endDate.getTime() > existingStartDate.getTime();
+
+      if (hasOverlap) {
+        const periodLabels: Record<BudgetPeriod, string> = {
+          WEEKLY: 'semanal',
+          MONTHLY: 'mensal',
+          YEARLY: 'anual',
+        };
+
+        const periodLabel = periodLabels[data.period] || 'mensal';
+        const formattedStartDate = format(startDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+        const categoryName = category.name;
+
+        throw new AppError(
+          400,
+          `Já existe um orçamento ${periodLabel} para a categoria "${categoryName}" iniciando em ${formattedStartDate}. Por favor, escolha outro período ou categoria.`
+        );
+      }
     }
 
     const budget = await prisma.budget.create({
@@ -255,6 +311,9 @@ export class BudgetService {
     const budget = await this.getById(userId, budgetId);
 
     const updateData: any = {};
+    let categoryToCheck = null;
+    let periodToCheck: BudgetPeriod | undefined = undefined;
+    let startDateToCheck: Date | undefined = undefined;
 
     if (data.categoryId !== undefined) {
       const category = await prisma.category.findFirst({
@@ -268,6 +327,13 @@ export class BudgetService {
         throw new AppError(404, 'Categoria não encontrada');
       }
       updateData.categoryId = data.categoryId;
+      categoryToCheck = category;
+    } else {
+      // Buscar categoria atual se não estiver sendo alterada
+      const currentCategory = await prisma.category.findUnique({
+        where: { id: budget.categoryId },
+      });
+      categoryToCheck = currentCategory;
     }
 
     if (data.amount !== undefined) {
@@ -280,10 +346,110 @@ export class BudgetService {
 
     if (data.period !== undefined) {
       updateData.period = data.period;
+      periodToCheck = data.period;
+    } else {
+      periodToCheck = budget.period as BudgetPeriod;
     }
 
     if (data.startDate !== undefined) {
-      updateData.startDate = new Date(data.startDate);
+      const newStartDate = new Date(data.startDate);
+      newStartDate.setHours(0, 0, 0, 0);
+      updateData.startDate = newStartDate;
+      startDateToCheck = newStartDate;
+    } else {
+      startDateToCheck = new Date(budget.startDate);
+      startDateToCheck.setHours(0, 0, 0, 0);
+    }
+
+    // Verificar se já existe outro orçamento para esta categoria no mesmo período
+    if (categoryToCheck && periodToCheck && startDateToCheck) {
+      let endDate: Date;
+
+      switch (periodToCheck) {
+        case 'WEEKLY':
+          endDate = new Date(startDateToCheck);
+          endDate.setDate(endDate.getDate() + 7);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'MONTHLY':
+          endDate = new Date(startDateToCheck);
+          endDate.setMonth(endDate.getMonth() + 1);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'YEARLY':
+          endDate = new Date(startDateToCheck);
+          endDate.setFullYear(endDate.getFullYear() + 1);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        default:
+          endDate = new Date(startDateToCheck);
+          endDate.setMonth(endDate.getMonth() + 1);
+          endDate.setHours(23, 59, 59, 999);
+      }
+
+      // Buscar todos os orçamentos da categoria (exceto o atual) para verificar sobreposição
+      const existingBudgets = await prisma.budget.findMany({
+        where: {
+          userId,
+          id: { not: budgetId },
+          categoryId: categoryToCheck.id,
+        },
+        select: {
+          startDate: true,
+          period: true,
+        },
+      });
+
+      // Verificar se algum orçamento existente sobrepõe o período do atualizado
+      for (const existing of existingBudgets) {
+        let existingEndDate: Date;
+        const existingStartDate = new Date(existing.startDate);
+        existingStartDate.setHours(0, 0, 0, 0);
+
+        switch (existing.period) {
+          case 'WEEKLY':
+            existingEndDate = new Date(existingStartDate);
+            existingEndDate.setDate(existingEndDate.getDate() + 7);
+            existingEndDate.setHours(23, 59, 59, 999);
+            break;
+          case 'MONTHLY':
+            existingEndDate = new Date(existingStartDate);
+            existingEndDate.setMonth(existingEndDate.getMonth() + 1);
+            existingEndDate.setHours(23, 59, 59, 999);
+            break;
+          case 'YEARLY':
+            existingEndDate = new Date(existingStartDate);
+            existingEndDate.setFullYear(existingEndDate.getFullYear() + 1);
+            existingEndDate.setHours(23, 59, 59, 999);
+            break;
+          default:
+            existingEndDate = new Date(existingStartDate);
+            existingEndDate.setMonth(existingEndDate.getMonth() + 1);
+            existingEndDate.setHours(23, 59, 59, 999);
+        }
+
+        // Verificar sobreposição: períodos se sobrepõem se:
+        // O novo período começa antes do existente terminar E termina depois do existente começar
+        const hasOverlap = startDateToCheck.getTime() < existingEndDate.getTime() && 
+                           endDate.getTime() > existingStartDate.getTime();
+
+        if (hasOverlap) {
+          const periodLabels: Record<BudgetPeriod, string> = {
+            WEEKLY: 'semanal',
+            MONTHLY: 'mensal',
+            YEARLY: 'anual',
+          };
+
+          const periodLabel = periodLabels[periodToCheck] || 'mensal';
+          const formattedStartDate = format(startDateToCheck, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+          const categoryName = categoryToCheck.name;
+
+          throw new AppError(
+            400,
+            `Já existe um orçamento ${periodLabel} para a categoria "${categoryName}" iniciando em ${formattedStartDate}. Por favor, escolha outro período ou categoria.`
+          );
+        }
+      }
     }
 
     const updated = await prisma.budget.update({

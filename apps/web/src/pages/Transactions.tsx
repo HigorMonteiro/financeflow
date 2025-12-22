@@ -10,6 +10,7 @@ import { transactionsService, Transaction as TransactionType } from '@/services/
 import { categoriesService } from '@/services/categories.service';
 import { accountsService } from '@/services/accounts.service';
 import { useUserPagination } from '@/hooks/useUserPagination';
+import { useToast } from '@/hooks/use-toast';
 import { Plus, Loader2 } from 'lucide-react';
 
 const initialFilters: FilterValues = {
@@ -32,6 +33,7 @@ export function Transactions() {
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
   const queryClient = useQueryClient();
   const itemsPerPage = useUserPagination();
+  const { toast } = useToast();
 
   // Buscar categorias e contas para os filtros
   const { 
@@ -148,6 +150,18 @@ export function Transactions() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast({
+        variant: 'success',
+        title: 'Categoria atualizada!',
+        description: 'A categoria da transação foi atualizada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar categoria',
+        description: error.response?.data?.error || 'Não foi possível atualizar a categoria. Tente novamente.',
+      });
     },
   });
 
@@ -167,6 +181,18 @@ export function Transactions() {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       setTransactionModalOpen(false);
       setEditingTransaction(undefined);
+      toast({
+        variant: 'success',
+        title: 'Transação criada!',
+        description: 'Sua transação foi criada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar transação',
+        description: error.response?.data?.error || 'Não foi possível criar a transação. Tente novamente.',
+      });
     },
   });
 
@@ -180,6 +206,18 @@ export function Transactions() {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       setTransactionModalOpen(false);
       setEditingTransaction(undefined);
+      toast({
+        variant: 'success',
+        title: 'Transação atualizada!',
+        description: 'Sua transação foi atualizada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar transação',
+        description: error.response?.data?.error || 'Não foi possível atualizar a transação. Tente novamente.',
+      });
     },
   });
 
@@ -190,6 +228,18 @@ export function Transactions() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      toast({
+        variant: 'success',
+        title: 'Transação excluída!',
+        description: 'A transação foi excluída com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir transação',
+        description: error.response?.data?.error || 'Não foi possível excluir a transação. Tente novamente.',
+      });
     },
   });
 

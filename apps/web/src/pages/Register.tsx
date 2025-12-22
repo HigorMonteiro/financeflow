@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -23,6 +24,7 @@ export function Register() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const {
     register,
@@ -36,10 +38,21 @@ export function Register() {
     mutationFn: authService.register,
     onSuccess: (data) => {
       setAuth(data.user, data.token);
+      toast({
+        variant: 'success',
+        title: 'Conta criada!',
+        description: 'Bem-vindo! Sua conta foi criada com sucesso.',
+      });
       navigate('/dashboard');
     },
     onError: (err: any) => {
-      setError(err.response?.data?.error || 'Erro ao criar conta');
+      const errorMessage = err.response?.data?.error || 'Erro ao criar conta';
+      setError(errorMessage);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar conta',
+        description: errorMessage,
+      });
     },
   });
 
