@@ -6,6 +6,8 @@ export interface Account {
   type: string;
   balance: string;
   currency: string;
+  billingStartDay?: number | null;
+  billingEndDay?: number | null;
 }
 
 export const accountsService = {
@@ -19,6 +21,8 @@ export const accountsService = {
     type: string;
     balance: string;
     currency: string;
+    billingStartDay?: number | null;
+    billingEndDay?: number | null;
   }): Promise<Account> {
     const response = await api.post<Account>('/accounts', data);
     return response.data;

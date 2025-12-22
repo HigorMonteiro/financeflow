@@ -6,7 +6,8 @@ import { IncomeSettings } from '@/components/Settings/IncomeSettings';
 import { SavingsSettings } from '@/components/Settings/SavingsSettings';
 import { CardsSettings } from '@/components/Settings/CardsSettings';
 import { PaginationSettings } from '@/components/Settings/PaginationSettings';
-import { User, FolderTree, DollarSign, PiggyBank, CreditCard, List } from 'lucide-react';
+import { AccountSettings } from '@/components/Settings/AccountSettings';
+import { User, FolderTree, DollarSign, PiggyBank, CreditCard, List, Wallet } from 'lucide-react';
 
 export function Settings() {
   return (
@@ -21,10 +22,14 @@ export function Settings() {
           </div>
 
           <Tabs defaultValue="user" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="user" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Usuário</span>
+              </TabsTrigger>
+              <TabsTrigger value="accounts" className="flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                <span className="hidden sm:inline">Contas</span>
               </TabsTrigger>
               <TabsTrigger value="categories" className="flex items-center gap-2">
                 <FolderTree className="h-4 w-4" />
@@ -50,6 +55,10 @@ export function Settings() {
 
             <TabsContent value="user" className="mt-6">
               <UserSettings />
+            </TabsContent>
+
+            <TabsContent value="accounts" className="mt-6">
+              <AccountSettings />
             </TabsContent>
 
             <TabsContent value="categories" className="mt-6">

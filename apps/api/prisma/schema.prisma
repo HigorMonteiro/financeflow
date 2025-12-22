@@ -28,12 +28,14 @@ model User {
 }
 
 model Account {
-  id       String   @id @default(cuid())
-  userId   String
-  name     String
-  type     String
-  balance  String   @default("0")
-  currency String   @default("BRL")
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  type           String
+  balance        String   @default("0")
+  currency       String   @default("BRL")
+  billingStartDay Int?    // Dia do mês em que inicia a fatura (1-31)
+  billingEndDay   Int?    // Dia do mês em que termina a fatura (1-31)
   
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]

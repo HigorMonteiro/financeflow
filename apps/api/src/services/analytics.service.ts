@@ -1,5 +1,6 @@
 import { prisma } from '../config/database';
 import Decimal from 'decimal.js';
+import { getBillingPeriod } from '../utils/billing-period.utils';
 
 export interface DashboardData {
   balance: {
@@ -48,9 +49,6 @@ export interface DashboardData {
 export class AnalyticsService {
   async getDashboardData(userId: string): Promise<DashboardData> {
     const now = new Date();
-    // Calcular início e fim do mês atual
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
     // Buscar todas as contas do usuário
     const accounts = await prisma.account.findMany({
@@ -69,16 +67,53 @@ export class AnalyticsService {
       balance: acc.balance,
     }));
 
-    // Transações do mês atual
-    const monthlyTransactions = await prisma.transaction.findMany({
-      where: {
-        userId,
-        date: {
-          gte: monthStart,
-          lte: monthEnd,
+    // Calcular transações do período atual considerando períodos de fatura por conta
+    // Se todas as contas têm período de fatura configurado, usa o período mais comum
+    // Caso contrário, agrupa transações por conta e seu respectivo período
+    const accountsWithBilling = accounts.filter(
+      (acc) => acc.billingStartDay && acc.billingEndDay
+    );
+
+    let monthlyTransactions: any[] = [];
+
+    if (accountsWithBilling.length > 0) {
+      // Buscar transações agrupadas por período de fatura de cada conta
+      const transactionPromises = accounts.map(async (account) => {
+        const period = getBillingPeriod(
+          account.billingStartDay,
+          account.billingEndDay,
+          now
+        );
+
+        return prisma.transaction.findMany({
+          where: {
+            userId,
+            accountId: account.id,
+            date: {
+              gte: period.startDate,
+              lte: period.endDate,
+            },
+          },
+        });
+      });
+
+      const transactionsByAccount = await Promise.all(transactionPromises);
+      monthlyTransactions = transactionsByAccount.flat();
+    } else {
+      // Fallback: usar mês calendário se nenhuma conta tem período configurado
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      monthlyTransactions = await prisma.transaction.findMany({
+        where: {
+          userId,
+          date: {
+            gte: monthStart,
+            lte: monthEnd,
+          },
         },
-      },
-    });
+      });
+    }
 
     const monthlyIncome = monthlyTransactions
       .filter((t) => t.type === 'INCOME')
@@ -106,19 +141,52 @@ export class AnalyticsService {
       take: 5,
     });
 
-    // Breakdown por categoria (mês atual)
-    const categoryTransactions = await prisma.transaction.findMany({
-      where: {
-        userId,
-        date: {
-          gte: monthStart,
-          lte: monthEnd,
+    // Breakdown por categoria (período atual considerando períodos de fatura)
+    let categoryTransactions: any[] = [];
+
+    if (accountsWithBilling.length > 0) {
+      const categoryPromises = accounts.map(async (account) => {
+        const period = getBillingPeriod(
+          account.billingStartDay,
+          account.billingEndDay,
+          now
+        );
+
+        return prisma.transaction.findMany({
+          where: {
+            userId,
+            accountId: account.id,
+            date: {
+              gte: period.startDate,
+              lte: period.endDate,
+            },
+          },
+          include: {
+            category: true,
+          },
+        });
+      });
+
+      const categoriesByAccount = await Promise.all(categoryPromises);
+      categoryTransactions = categoriesByAccount.flat();
+    } else {
+      // Fallback: usar mês calendário
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      categoryTransactions = await prisma.transaction.findMany({
+        where: {
+          userId,
+          date: {
+            gte: monthStart,
+            lte: monthEnd,
+          },
         },
-      },
-      include: {
-        category: true,
-      },
-    });
+        include: {
+          category: true,
+        },
+      });
+    }
 
     const categoryMap = new Map<
       string,
