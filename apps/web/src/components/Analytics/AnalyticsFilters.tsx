@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MobileFilters } from '@/components/ui/MobileFilters';
+import { DesktopFiltersSidebar } from '@/components/ui/DesktopFiltersSidebar';
 import { Label } from '@/components/ui/label';
 
 interface AnalyticsFiltersProps {
@@ -150,7 +151,14 @@ export function AnalyticsFilters(props: AnalyticsFiltersProps) {
         <AnalyticsFiltersContent {...props} />
       </MobileFilters>
 
-      {/* Desktop: Filtros completos - mantém o layout atual */}
+      {/* Desktop: Sidebar lateral */}
+      <DesktopFiltersSidebar
+        activeFiltersCount={activeFiltersCount}
+        title="Filtros de Análises"
+        className="hidden md:flex"
+      >
+        <AnalyticsFiltersContent {...props} />
+      </DesktopFiltersSidebar>
     </>
   );
 }

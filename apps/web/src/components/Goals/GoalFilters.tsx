@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MobileFilters } from '@/components/ui/MobileFilters';
+import { DesktopFiltersSidebar } from '@/components/ui/DesktopFiltersSidebar';
 import { Label } from '@/components/ui/label';
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -92,50 +93,14 @@ export function GoalFilters(props: GoalFiltersProps) {
         <GoalFiltersContent {...props} />
       </MobileFilters>
 
-      {/* Desktop: Filtros completos */}
-      <div className="hidden md:flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Filtros:</span>
-          <Button
-            variant={props.status === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => props.onStatusChange('all')}
-            className="min-h-[44px]"
-          >
-            Todas
-          </Button>
-          <Button
-            variant={props.status === 'active' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => props.onStatusChange('active')}
-            className="min-h-[44px]"
-          >
-            Em Andamento
-          </Button>
-          <Button
-            variant={props.status === 'completed' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => props.onStatusChange('completed')}
-            className="min-h-[44px]"
-          >
-            Concluídas
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Ordenar por:</span>
-          <Select value={props.sortBy} onValueChange={(value) => props.onSortChange(value as SortOption)}>
-            <SelectTrigger className="w-[180px] min-h-[44px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="deadline">Prazo</SelectItem>
-              <SelectItem value="progress">Progresso</SelectItem>
-              <SelectItem value="created">Data de Criação</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      {/* Desktop: Sidebar lateral */}
+      <DesktopFiltersSidebar
+        activeFiltersCount={activeFiltersCount}
+        title="Filtros de Metas"
+        className="hidden md:flex"
+      >
+        <GoalFiltersContent {...props} />
+      </DesktopFiltersSidebar>
     </>
   );
 }

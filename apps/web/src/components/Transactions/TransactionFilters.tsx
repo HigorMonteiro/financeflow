@@ -283,8 +283,8 @@ export function TransactionFilters({
       )}
 
       {isOpen && (
-        <div className={isMobile ? "" : "px-6 pb-6"}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={isMobile ? "" : ""}>
+          <div className="grid grid-cols-1 gap-4">
             {/* Busca */}
             <div className="space-y-2">
               <Label htmlFor="search">Buscar</Label>
@@ -293,6 +293,7 @@ export function TransactionFilters({
                 placeholder="Descrição, categoria ou conta..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
+                className="min-h-[44px]"
               />
             </div>
 
@@ -356,7 +357,7 @@ export function TransactionFilters({
                 value={filters.accountId || '__all__'}
                 onValueChange={(value) => handleFilterChange('accountId', value === '__all__' ? '' : value)}
               >
-                <SelectTrigger id="account">
+                <SelectTrigger id="account" className="min-h-[44px]">
                   <SelectValue placeholder="Todas as contas" />
                 </SelectTrigger>
                 <SelectContent>
@@ -395,7 +396,7 @@ export function TransactionFilters({
                   value={filters.month || '__all__'}
                   onValueChange={(value) => handleFilterChange('month', value === '__all__' ? '' : value)}
                 >
-                  <SelectTrigger id="month" className="flex-1">
+                  <SelectTrigger id="month" className="flex-1 min-h-[44px]">
                     <SelectValue placeholder="Todos os meses" />
                   </SelectTrigger>
                   <SelectContent>
@@ -418,7 +419,7 @@ export function TransactionFilters({
                   value={filters.year || '__all__'}
                   onValueChange={(value) => handleFilterChange('year', value === '__all__' ? '' : value)}
                 >
-                  <SelectTrigger id="year" className="flex-1">
+                  <SelectTrigger id="year" className="flex-1 min-h-[44px]">
                     <SelectValue placeholder="Todos os anos" />
                   </SelectTrigger>
                   <SelectContent>
@@ -452,6 +453,7 @@ export function TransactionFilters({
                 type="date"
                 value={filters.startDate}
                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                className="min-h-[44px]"
               />
             </div>
 
@@ -466,6 +468,7 @@ export function TransactionFilters({
                 type="date"
                 value={filters.endDate}
                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                className="min-h-[44px]"
               />
             </div>
 
@@ -479,6 +482,7 @@ export function TransactionFilters({
                 placeholder="0.00"
                 value={filters.minAmount}
                 onChange={(e) => handleFilterChange('minAmount', e.target.value)}
+                className="min-h-[44px]"
               />
             </div>
 
@@ -492,6 +496,7 @@ export function TransactionFilters({
                 placeholder="0.00"
                 value={filters.maxAmount}
                 onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
+                className="min-h-[44px]"
               />
             </div>
           </div>

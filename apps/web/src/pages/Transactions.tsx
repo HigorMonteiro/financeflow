@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/Layout/AppLayout';
 import { TransactionTable, Transaction } from '@/components/Transactions/TransactionTable';
 import { TransactionFilters, FilterValues } from '@/components/Transactions/TransactionFilters';
 import { TransactionFiltersMobile } from '@/components/Transactions/TransactionFiltersMobile';
+import { TransactionFiltersDesktop } from '@/components/Transactions/TransactionFiltersDesktop';
 import { TransactionModal } from '@/components/Transactions/TransactionModal';
 import { CSVImportModal } from '@/components/Import/CSVImportModal';
 import { Button } from '@/components/ui/button';
@@ -386,6 +387,32 @@ export function Transactions() {
                   }}
                 />
               </div>
+              {/* Filtros Desktop */}
+              <div className="hidden md:flex items-center gap-2">
+                <TransactionFiltersDesktop
+                  categories={categoriesData || []}
+                  accounts={accountsData || []}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  onReset={handleResetFilters}
+                  isLoadingCategories={isLoadingCategories}
+                  isLoadingAccounts={isLoadingAccounts}
+                  categoriesError={categoriesError}
+                  accountsError={accountsError}
+                  activeFiltersCount={
+                    Object.values(filters).filter(
+                      (v) => v !== '' && v !== 'all'
+                    ).length
+                  }
+                />
+                <ImportExportActions
+                  onImport={() => setImportModalOpen(true)}
+                  onExport={() => {
+                    // TODO: Implementar exportação
+                    console.log('Exportar');
+                  }}
+                />
+              </div>
               {/* Botão Desktop */}
               <FloatingActionButton
                 onClick={handleCreateTransaction}
@@ -394,32 +421,12 @@ export function Transactions() {
             </div>
           </div>
 
-          {/* Filtros Desktop */}
-          <div className="hidden md:block">
-            <TransactionFilters
-              categories={categoriesData || []}
-              accounts={accountsData || []}
-              filters={filters}
-              onFiltersChange={setFilters}
-              onReset={handleResetFilters}
-              isLoadingCategories={isLoadingCategories}
-              isLoadingAccounts={isLoadingAccounts}
-              categoriesError={categoriesError}
-              accountsError={accountsError}
-            />
-          </div>
-
           <TransactionTable
             transactions={transactions}
             categories={categoriesData || []}
             onCategoryChange={handleCategoryChange}
             onEdit={handleEditTransaction}
             onDelete={handleDeleteTransaction}
-            onImport={() => setImportModalOpen(true)}
-            onExport={() => {
-              // TODO: Implementar exportação
-              console.log('Exportar');
-            }}
           />
 
           {/* Scroll infinito trigger */}

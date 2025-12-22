@@ -12,7 +12,6 @@ import {
 import { ArrowUpDown, Download, Upload, Edit, Trash2 } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
 import { TransactionCard } from './TransactionCard';
-import { ImportExportActions } from './ImportExportActions';
 
 export interface Transaction {
   id: string;
@@ -45,8 +44,6 @@ interface TransactionTableProps {
   onCategoryChange?: (transactionId: string, categoryId: string) => void;
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (transactionId: string) => void;
-  onImport?: () => void;
-  onExport?: () => void;
 }
 
 export function TransactionTable({ 
@@ -55,8 +52,6 @@ export function TransactionTable({
   onCategoryChange,
   onEdit,
   onDelete,
-  onImport, 
-  onExport 
 }: TransactionTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof Transaction | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -131,18 +126,7 @@ export function TransactionTable({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-center gap-2">
-          <CardTitle className="text-lg md:text-xl">Transações</CardTitle>
-          {/* Desktop: Ações de Import/Export */}
-          {(onImport || onExport) && (
-            <div className="hidden md:block">
-              <ImportExportActions
-                onImport={onImport}
-                onExport={onExport}
-              />
-            </div>
-          )}
-        </div>
+        <CardTitle className="text-lg md:text-xl">Transações</CardTitle>
       </CardHeader>
       <CardContent>
 
