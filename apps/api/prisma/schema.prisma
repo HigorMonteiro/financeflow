@@ -21,6 +21,7 @@ model User {
   categories    Category[]
   goals         Goal[]
   budgets       Budget[]
+  cards         Card[]
   
   @@map("users")
 }
@@ -66,6 +67,7 @@ model Transaction {
   userId             String
   accountId          String
   categoryId         String
+  cardId             String?  // Cartão de crédito associado (opcional)
   amount             String
   type               String
   description        String
@@ -80,10 +82,12 @@ model Transaction {
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   account            Account              @relation(fields: [accountId], references: [id])
   category           Category             @relation(fields: [categoryId], references: [id])
+  card               Card?                @relation(fields: [cardId], references: [id], onDelete: SetNull)
   recurringDetails   RecurringTransaction?
   
   @@index([userId, date])
   @@index([categoryId])
+  @@index([cardId])
   @@map("transactions")
 }
 
@@ -133,5 +137,26 @@ model Budget {
   updatedAt DateTime @updatedAt
   
   @@map("budgets")
+}
+
+model Card {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String   // Nome do cartão (ex: "Nubank Roxinho")
+  bank            String?  // Banco/Instituição (NUBANK, INTER, ITAU, SANTANDER, etc)
+  lastFourDigits  String?  // Últimos 4 dígitos do cartão
+  bestPurchaseDay Int?     // Melhor dia para compra (1-31)
+  dueDay          Int?     // Dia de vencimento (1-31)
+  closingDay      Int?     // Dia de fechamento/corte da fatura (1-31)
+  limit           String?  // Limite do cartão
+  isActive        Boolean  @default(true)
+  
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("cards")
 }
 

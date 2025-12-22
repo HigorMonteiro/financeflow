@@ -11,8 +11,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { accountsService } from '@/services/accounts.service';
+import { cardsService, Card as CardType } from '@/services/cards.service';
 import { Plus, Trash2, Edit, Save, X, CreditCard, Loader2 } from 'lucide-react';
+
+const BANK_OPTIONS = [
+  { value: 'NUBANK', label: 'Nubank' },
+  { value: 'INTER', label: 'Inter' },
+  { value: 'ITAU', label: 'Itaú' },
+  { value: 'SANTANDER', label: 'Santander' },
+  { value: 'BRADESCO', label: 'Bradesco' },
+  { value: 'CAIXA', label: 'Caixa Econômica' },
+  { value: 'BB', label: 'Banco do Brasil' },
+  { value: 'OTHER', label: 'Outro' },
+];
 
 export function CardsSettings() {
   const queryClient = useQueryClient();
@@ -20,40 +31,49 @@ export function CardsSettings() {
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    type: 'CREDIT_CARD',
-    balance: '0',
-    currency: 'BRL',
+    bank: 'NUBANK',
+    lastFourDigits: '',
+    bestPurchaseDay: 1,
+    dueDay: 10,
+    closingDay: 5,
+    limit: '',
   });
 
-  const { data: accounts, isLoading } = useQuery({
-    queryKey: ['accounts'],
-    queryFn: accountsService.getAll,
+  const { data: cards, isLoading } = useQuery({
+    queryKey: ['cards'],
+    queryFn: cardsService.getAll,
   });
-
-  // Filtrar apenas cartões de crédito
-  const cards = accounts?.filter((acc) => acc.type === 'CREDIT_CARD') || [];
 
   const createMutation = useMutation({
-    mutationFn: accountsService.create,
+    mutationFn: cardsService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['cards'] });
       setIsCreating(false);
-      setFormData({ name: '', type: 'CREDIT_CARD', balance: '0', currency: 'BRL' });
+      setFormData({
+        name: '',
+        bank: 'NUBANK',
+        lastFourDigits: '',
+        bestPurchaseDay: 1,
+        dueDay: 10,
+        closingDay: 5,
+        limit: '',
+      });
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => accountsService.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<CardType> }) =>
+      cardsService.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['cards'] });
       setEditingId(null);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: accountsService.delete,
+    mutationFn: cardsService.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['cards'] });
     },
   });
 
@@ -61,17 +81,24 @@ export function CardsSettings() {
     if (editingId) {
       updateMutation.mutate({ id: editingId, data: formData });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate({
+        ...formData,
+        lastFourDigits: formData.lastFourDigits || undefined,
+        limit: formData.limit || undefined,
+      });
     }
   };
 
-  const handleEdit = (card: any) => {
+  const handleEdit = (card: CardType) => {
     setEditingId(card.id);
     setFormData({
       name: card.name,
-      type: card.type,
-      balance: card.balance,
-      currency: card.currency,
+      bank: card.bank,
+      lastFourDigits: card.lastFourDigits || '',
+      bestPurchaseDay: card.bestPurchaseDay,
+      dueDay: card.dueDay,
+      closingDay: card.closingDay,
+      limit: card.limit || '',
     });
     setIsCreating(false);
   };
@@ -79,7 +106,15 @@ export function CardsSettings() {
   const handleCancel = () => {
     setEditingId(null);
     setIsCreating(false);
-    setFormData({ name: '', type: 'CREDIT_CARD', balance: '0', currency: 'BRL' });
+    setFormData({
+      name: '',
+      bank: 'NUBANK',
+      lastFourDigits: '',
+      bestPurchaseDay: 1,
+      dueDay: 10,
+      closingDay: 5,
+      limit: '',
+    });
   };
 
   if (isLoading) {
@@ -115,44 +150,118 @@ export function CardsSettings() {
       <CardContent>
         {(isCreating || editingId) && (
           <div className="mb-6 p-4 border rounded-lg space-y-4">
-            <div className="space-y-2">
-              <Label>Nome do Cartão</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ex: Nubank, Inter, etc."
-              />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Limite/Saldo</Label>
+                <Label>Nome do Cartão *</Label>
                 <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.balance}
-                  onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-                  placeholder="0.00"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ex: Nubank Roxinho"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Moeda</Label>
+                <Label>Banco/Instituição *</Label>
                 <Select
-                  value={formData.currency}
-                  onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                  value={formData.bank}
+                  onValueChange={(value) => setFormData({ ...formData, bank: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="BRL">BRL (R$)</SelectItem>
-                    <SelectItem value="USD">USD ($)</SelectItem>
-                    <SelectItem value="EUR">EUR (€)</SelectItem>
+                    {BANK_OPTIONS.map((bank) => (
+                      <SelectItem key={bank.value} value={bank.value}>
+                        {bank.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Últimos 4 dígitos</Label>
+                <Input
+                  value={formData.lastFourDigits}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      lastFourDigits: e.target.value.replace(/\D/g, '').slice(0, 4),
+                    })
+                  }
+                  placeholder="1234"
+                  maxLength={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Limite do Cartão</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={formData.limit}
+                  onChange={(e) => setFormData({ ...formData, limit: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Melhor Dia para Compra *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={formData.bestPurchaseDay}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      bestPurchaseDay: parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">Dia do mês (1-31)</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Dia de Vencimento *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={formData.dueDay}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      dueDay: parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">Dia do mês (1-31)</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Dia de Fechamento *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={formData.closingDay}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      closingDay: parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">Quando começa nova fatura</p>
+              </div>
+            </div>
+
             <div className="flex gap-2">
-              <Button onClick={handleSave} disabled={!formData.name || createMutation.isPending || updateMutation.isPending}>
+              <Button
+                onClick={handleSave}
+                disabled={!formData.name || createMutation.isPending || updateMutation.isPending}
+              >
                 <Save className="h-4 w-4 mr-2" />
                 Salvar
               </Button>
@@ -165,50 +274,76 @@ export function CardsSettings() {
         )}
 
         <div className="space-y-2">
-          {cards.length > 0 ? (
-            cards.map((card) => (
-              <div
-                key={card.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded bg-primary/10">
-                    <CreditCard className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{card.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: card.currency,
-                      }).format(parseFloat(card.balance))}
+          {cards && cards.length > 0 ? (
+            cards.map((card) => {
+              const bankOption = BANK_OPTIONS.find((b) => b.value === card.bank);
+              return (
+                <div
+                  key={card.id}
+                  className={`flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 ${
+                    !card.isActive ? 'opacity-50' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="p-2 rounded bg-primary/10">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{card.name}</span>
+                        {!card.isActive && (
+                          <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">
+                            Inativo
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>
+                          {bankOption?.label || card.bank}
+                          {card.lastFourDigits && ` • Final ${card.lastFourDigits}`}
+                        </div>
+                        <div className="flex gap-4 text-xs">
+                          <span>Vencimento: dia {card.dueDay}</span>
+                          <span>Fechamento: dia {card.closingDay}</span>
+                          <span>Melhor compra: dia {card.bestPurchaseDay}</span>
+                        </div>
+                        {card.limit && (
+                          <div className="text-xs">
+                            Limite:{' '}
+                            {new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            }).format(parseFloat(card.limit))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(card)}
+                      disabled={editingId === card.id}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja excluir este cartão?')) {
+                          deleteMutation.mutate(card.id);
+                        }
+                      }}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(card)}
-                    disabled={editingId === card.id}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      if (confirm('Tem certeza que deseja excluir este cartão?')) {
-                        deleteMutation.mutate(card.id);
-                      }
-                    }}
-                    disabled={deleteMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p className="text-center text-muted-foreground py-8">
               Nenhum cartão cadastrado
