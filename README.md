@@ -120,28 +120,58 @@ pnpm test
 - ✅ Estrutura de rotas protegidas
 - ✅ Componentes UI base (shadcn/ui)
 - ✅ Integração React Query + Zustand
+- ✅ **Configurações do usuário** (perfil, preferências)
+  - ✅ Configuração de paginação (3, 5, 10 ou 50 itens por página)
+  - ✅ Aplicada automaticamente em todas as listagens
 
 ### ✅ Gestão Financeira
 - ✅ **CRUD completo de Transações** (criar, editar, deletar, filtrar)
+  - ✅ Scroll infinito com paginação configurável
+  - ✅ Filtros avançados com visualização de filtros ativos
+  - ✅ Filtros removíveis via Toggles
 - ✅ **CRUD completo de Contas** (backend completo, integrado no sistema)
+  - ✅ Configuração de período de fatura por conta
+  - ✅ Suporte a períodos que cruzam meses (ex: dia 10 ao dia 9)
+  - ✅ Interface de gerenciamento completa em Configurações
 - ✅ **CRUD completo de Categorias** (com categorias padrão e personalizadas)
 - ✅ **Importação de CSV/Excel** (com detecção automática de cartão)
 - ✅ **Gestão de Cartões de Crédito** (CRUD completo)
 
 ### ✅ Analytics e Visualizações
 - ✅ **Dashboard** com resumo financeiro e transações recentes
+  - ✅ Exibe últimas 5 despesas
+  - ✅ Métricas mensais considerando períodos de fatura configurados
 - ✅ **Gráficos de Tendências** (diário, semanal, mensal)
 - ✅ **Fluxo de Caixa** (visualização de 3, 6, 12 meses)
 - ✅ **Análise por Categoria** (gráficos de pizza para receitas/despesas)
 - ✅ **Comparação de Períodos** (mensal, trimestral, anual)
+- ✅ **Relatórios baseados em período de fatura** (não apenas mês calendário)
 
-### ⚠️ Em Desenvolvimento
-- ⚠️ **Metas de Economia** (modelo existe, falta CRUD completo)
-  - ✅ Exibição no Dashboard
-  - ❌ Página de gerenciamento ainda não implementada
+### ✅ Metas de Economia
+- ✅ **CRUD completo de Metas** (criar, editar, deletar, visualizar)
+- ✅ **Tipos de metas**: Fundo de Emergência, Viagem, Compra, Investimento, Outros
+- ✅ **Cálculo automático de progresso** (percentual e barra visual)
+- ✅ **Filtros e ordenação** (por status, prazo, progresso, data de criação)
+- ✅ **Scroll infinito** com paginação configurável
+- ✅ **Exibição no Dashboard** com link para página completa
 
 ### ❌ Planejadas
 - ❌ **Orçamentos** (modelo no schema, aguardando implementação)
+
+## 🎨 Funcionalidades de UX/UI
+
+### ✅ Melhorias de Interface
+- ✅ **Scroll infinito** em todas as listagens principais
+- ✅ **Paginação configurável** por usuário (3, 5, 10 ou 50 itens)
+- ✅ **Visualização de filtros ativos** com Toggles removíveis
+- ✅ **Indicadores visuais** de carregamento e estados vazios
+- ✅ **Formatação de moeda** brasileira (R$)
+- ✅ **Formatação de datas** em português
+
+### ✅ Configurações Avançadas
+- ✅ **Período de fatura por conta**: Configure dias de início e término da fatura
+- ✅ **Relatórios inteligentes**: Cálculos baseados no período de fatura, não apenas mês calendário
+- ✅ **Suporte a períodos que cruzam meses**: Ex: fatura do dia 10 ao dia 9 do mês seguinte
 
 > 📊 **Para ver o status detalhado de todas as features, consulte:** [`FEATURES_STATUS.md`](./FEATURES_STATUS.md)
 

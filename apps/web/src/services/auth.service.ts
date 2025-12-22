@@ -55,6 +55,8 @@ export const authService = {
 
   logout(): void {
     localStorage.removeItem('token');
+    // Não remove as credenciais lembradas ao fazer logout
+    // O usuário pode desmarcar o checkbox na próxima vez que fizer login
   },
 };
 

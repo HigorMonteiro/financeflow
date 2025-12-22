@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const loginSchema = z.object({
@@ -18,18 +19,38 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+const REMEMBER_ME_KEY = 'rememberedCredentials';
+
 export function Login() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [error, setError] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  // Carregar credenciais salvas ao montar o componente
+  useEffect(() => {
+    const savedCredentials = localStorage.getItem(REMEMBER_ME_KEY);
+    if (savedCredentials) {
+      try {
+        const { email, password } = JSON.parse(savedCredentials);
+        setValue('email', email);
+        setValue('password', password);
+        setRememberMe(true);
+      } catch (error) {
+        // Se houver erro ao parsear, remove o item corrompido
+        localStorage.removeItem(REMEMBER_ME_KEY);
+      }
+    }
+  }, [setValue]);
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
@@ -44,6 +65,17 @@ export function Login() {
 
   const onSubmit = (data: LoginFormData) => {
     setError(null);
+    
+    // Salvar ou remover credenciais baseado no checkbox
+    if (rememberMe) {
+      localStorage.setItem(REMEMBER_ME_KEY, JSON.stringify({
+        email: data.email,
+        password: data.password,
+      }));
+    } else {
+      localStorage.removeItem(REMEMBER_ME_KEY);
+    }
+    
     loginMutation.mutate(data);
   };
 
@@ -80,6 +112,20 @@ export function Login() {
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="rememberMe"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              />
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-normal cursor-pointer"
+              >
+                Lembrar usuário e senha
+              </Label>
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
