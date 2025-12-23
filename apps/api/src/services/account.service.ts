@@ -7,6 +7,7 @@ export interface CreateAccountDTO {
   type: string;
   balance: string;
   currency: string;
+  color?: string;
   billingStartDay?: number | null;
   billingEndDay?: number | null;
 }
@@ -16,6 +17,7 @@ export interface UpdateAccountDTO {
   type?: string;
   balance?: string;
   currency?: string;
+  color?: string;
   billingStartDay?: number | null;
   billingEndDay?: number | null;
 }
@@ -102,6 +104,7 @@ export class AccountService {
     if (data.type !== undefined) updateData.type = data.type;
     if (data.balance !== undefined) updateData.balance = data.balance;
     if (data.currency !== undefined) updateData.currency = data.currency;
+    if (data.color !== undefined) updateData.color = data.color;
     if (data.billingStartDay !== undefined) updateData.billingStartDay = data.billingStartDay;
     if (data.billingEndDay !== undefined) updateData.billingEndDay = data.billingEndDay;
 

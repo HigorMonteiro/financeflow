@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
 import { Transaction } from './TransactionTable';
+import { AccountColorDot } from '@/components/ui/AccountColorDot';
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -73,9 +74,16 @@ export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCa
                     {transaction.category.name}
                   </span>
                   <span className="text-xs text-muted-foreground">•</span>
-                  <span className="text-xs text-muted-foreground">
-                    {transaction.account.name}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <AccountColorDot
+                      color={transaction.account.color || '#3b82f6'}
+                      accountName={transaction.account.name}
+                      size="sm"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {transaction.account.name}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

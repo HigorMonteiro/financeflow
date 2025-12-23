@@ -12,6 +12,7 @@ import {
 import { ArrowUpDown, Download, Upload, Edit, Trash2 } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
 import { TransactionCard } from './TransactionCard';
+import { AccountColorDot } from '@/components/ui/AccountColorDot';
 
 export interface Transaction {
   id: string;
@@ -298,7 +299,16 @@ export function TransactionTable({
                           </span>
                         )}
                       </td>
-                      <td className="border p-2">{transaction.account.name}</td>
+                      <td className="border p-2">
+                        <div className="flex items-center gap-2">
+                          <AccountColorDot
+                            color={transaction.account.color || '#3b82f6'}
+                            accountName={transaction.account.name}
+                            size="sm"
+                          />
+                          {transaction.account.name}
+                        </div>
+                      </td>
                       <td
                         className={`border p-2 text-right font-medium ${
                           transaction.type === 'INCOME'

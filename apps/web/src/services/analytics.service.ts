@@ -26,6 +26,7 @@ export interface DashboardData {
     };
     account: {
       name: string;
+      color?: string;
     };
   }>;
   categoryBreakdown: Array<{

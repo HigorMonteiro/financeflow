@@ -256,9 +256,10 @@ export class AnalyticsService {
           name: t.category.name,
           color: t.category.color,
         },
-        account: {
-          name: t.account.name,
-        },
+          account: {
+            name: t.account.name,
+            color: t.account.color || '#3b82f6',
+          },
       })),
       categoryBreakdown: categoryBreakdown.sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)),
       goals: goalsWithProgress,

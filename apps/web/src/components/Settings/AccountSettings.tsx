@@ -14,6 +14,7 @@ import {
 import { accountsService, Account } from '@/services/accounts.service';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit2, Trash2, Save, X, Loader2, Calendar } from 'lucide-react';
+import { AccountColorDot } from '@/components/ui/AccountColorDot';
 
 const ACCOUNT_TYPES = [
   { value: 'CHECKING', label: 'Conta Corrente' },
@@ -42,6 +43,7 @@ export function AccountSettings() {
     type: 'CHECKING',
     balance: '0',
     currency: 'BRL',
+    color: '#3b82f6',
     billingStartDay: null as number | null,
     billingEndDay: null as number | null,
   });
@@ -61,6 +63,7 @@ export function AccountSettings() {
         type: 'CHECKING',
         balance: '0',
         currency: 'BRL',
+        color: '#3b82f6',
         billingStartDay: null,
         billingEndDay: null,
       });
@@ -141,6 +144,7 @@ export function AccountSettings() {
       type: account.type,
       balance: account.balance,
       currency: account.currency,
+      color: account.color || '#3b82f6',
       billingStartDay: account.billingStartDay ?? null,
       billingEndDay: account.billingEndDay ?? null,
     });
@@ -273,6 +277,30 @@ export function AccountSettings() {
                 </div>
               </div>
 
+              {/* Cor da Conta */}
+              <div className="space-y-2">
+                <Label htmlFor="color">Cor da Conta</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="color"
+                    type="color"
+                    value={formData.color}
+                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                    className="h-10 w-20 cursor-pointer"
+                  />
+                  <Input
+                    type="text"
+                    value={formData.color}
+                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                    placeholder="#3b82f6"
+                    className="flex-1 min-h-[44px]"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Escolha uma cor para identificar visualmente esta conta
+                </p>
+              </div>
+
               {/* Período de Fatura */}
               <div className="pt-4 border-t">
                 <h4 className="font-medium mb-3 flex items-center gap-2">
@@ -401,6 +429,11 @@ export function AccountSettings() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
+                        <AccountColorDot
+                          color={account.color || '#3b82f6'}
+                          accountName={account.name}
+                          size="md"
+                        />
                         <h4 className="font-semibold">{account.name}</h4>
                         <span className="text-xs px-2 py-1 bg-muted rounded">
                           {ACCOUNT_TYPES.find((t) => t.value === account.type)?.label ||

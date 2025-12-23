@@ -6,6 +6,7 @@ export interface Account {
   type: string;
   balance: string;
   currency: string;
+  color?: string;
   billingStartDay?: number | null;
   billingEndDay?: number | null;
 }

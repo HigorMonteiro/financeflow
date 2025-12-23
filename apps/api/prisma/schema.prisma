@@ -34,6 +34,7 @@ model Account {
   type           String
   balance        String   @default("0")
   currency       String   @default("BRL")
+  color          String   @default("#3b82f6") // Cor da conta para identificação visual
   billingStartDay Int?    // Dia do mês em que inicia a fatura (1-31)
   billingEndDay   Int?    // Dia do mês em que termina a fatura (1-31)
   

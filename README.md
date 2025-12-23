@@ -29,7 +29,9 @@ finance-flow/
 │       ├── prisma/          # Schema e migrations
 │       └── package.json
 ├── scripts/          # Scripts de setup
-└── docker-compose.yml
+├── docker-compose.yml          # Docker Compose para produção
+├── docker-compose.dev.yml      # Docker Compose para desenvolvimento
+└── DEPLOY.md                   # Guia completo de deploy
 ```
 
 ## 🛠️ Como Começar
@@ -38,8 +40,23 @@ finance-flow/
 
 - Node.js 20+ LTS
 - pnpm (recomendado) ou npm/yarn
+- Docker e Docker Compose (para deploy)
 
-### Setup Rápido
+### 🐳 Deploy com Docker (Recomendado)
+
+Para deploy rápido com Docker:
+
+```bash
+# Desenvolvimento
+./scripts/deploy.sh dev start
+
+# Produção
+./scripts/deploy.sh production start
+```
+
+Veja o arquivo [DEPLOY.md](./DEPLOY.md) para instruções completas.
+
+### Setup Rápido (Local)
 
 ```bash
 # Opção 1: Script automático (recomendado)

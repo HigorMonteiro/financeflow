@@ -7,6 +7,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontSize: {
+        sm: '0.75rem', // 12px - customizado para mobile
+        '2xl': ['1rem', { lineHeight: '1.5rem' }], // 16px - customizado para mobile quando usado diretamente
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

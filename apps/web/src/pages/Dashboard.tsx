@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { analyticsService } from '@/services/analytics.service';
 import { TrendingUp, TrendingDown, Wallet, Target, ArrowRight } from 'lucide-react';
 import { typography } from '@/lib/typography';
+import { AccountColorDot } from '@/components/ui/AccountColorDot';
 
 export function Dashboard() {
   const navigate = useNavigate();
