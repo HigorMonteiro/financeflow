@@ -1,6 +1,6 @@
 import XLSX from 'xlsx';
 import { prisma } from '../config/database';
-import { AccountType, CategoryType, TransactionType } from '../types/enums';
+import { AccountType, CategoryType, TransactionType, type AccountType as AccountTypeType } from '../types/enums';
 
 export interface ImportResult {
   success: boolean;
@@ -223,7 +223,7 @@ export class ExcelImportService {
       if (!name) continue;
 
       const typeStr = String(row[typeIndex] || row[1] || 'CHECKING').toUpperCase();
-      let type = AccountType.CHECKING;
+      let type: AccountTypeType = AccountType.CHECKING;
       if (typeStr.includes('POUPANÇA') || typeStr.includes('SAVINGS')) {
         type = AccountType.SAVINGS;
       } else if (typeStr.includes('CARTÃO') || typeStr.includes('CARD')) {
