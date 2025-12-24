@@ -81,3 +81,21 @@ NODE_ENV="development"
 PORT=3000
 ```
 
+## 🚀 Produção com PM2
+
+Para produção, use o PM2 para gerenciar o processo da API:
+
+```bash
+# Compilar a API
+npm run build
+
+# Iniciar com PM2
+pm2 start ecosystem.config.js
+pm2 save
+
+# Configurar para iniciar no boot
+pm2 startup
+```
+
+Veja o arquivo `PM2_SETUP.md` para documentação completa sobre PM2.
+
