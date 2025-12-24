@@ -118,9 +118,9 @@ tail -f /home/deploy/.pm2/logs/finance-flow-api-combined.log
 pm2 flush
 ```
 
-## ⚙️ Configuração do ecosystem.config.js
+## ⚙️ Configuração do ecosystem.config.cjs
 
-O arquivo `ecosystem.config.js` está configurado com:
+O arquivo `ecosystem.config.cjs` está configurado com:
 
 - **Nome**: `finance-flow-api`
 - **Script**: `node dist/server.js`

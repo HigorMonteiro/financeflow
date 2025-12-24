@@ -3,8 +3,10 @@
  * 
  * This file configures PM2 to manage the Finance Flow API process.
  * 
+ * Note: This file uses .cjs extension because package.json has "type": "module"
+ * 
  * Usage:
- *   pm2 start ecosystem.config.js
+ *   pm2 start ecosystem.config.cjs
  *   pm2 save
  *   pm2 startup
  * 
