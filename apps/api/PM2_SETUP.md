@@ -35,7 +35,7 @@ pm2 startup systemd -u deploy --hp /home/deploy
 
 ```bash
 cd apps/api
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 ```
 
@@ -45,7 +45,7 @@ pm2 save
 /home/deploy/apps/finance_flow/
 ├── apps/
 │   └── api/
-│       ├── ecosystem.config.js    # Configuração do PM2
+│       ├── ecosystem.config.cjs   # Configuração do PM2
 │       ├── .env                   # Variáveis de ambiente
 │       ├── dist/                  # Código compilado
 │       └── package.json
@@ -133,7 +133,7 @@ O arquivo `ecosystem.config.js` está configurado com:
 
 ### Personalizar Configuração
 
-Para alterar configurações, edite `ecosystem.config.js`:
+Para alterar configurações, edite `ecosystem.config.cjs`:
 
 ```javascript
 module.exports = {

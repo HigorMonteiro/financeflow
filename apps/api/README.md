@@ -90,7 +90,7 @@ Para produção, use o PM2 para gerenciar o processo da API:
 npm run build
 
 # Iniciar com PM2
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 
 # Configurar para iniciar no boot
