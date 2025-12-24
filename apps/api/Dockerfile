@@ -25,6 +25,11 @@ COPY --from=deps /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY . .
 
 # Generate Prisma Client
+# Prisma needs a valid DATABASE_URL format to validate schema during build
+# We use a dummy URL since we don't need to connect during build
+# The real DATABASE_URL will be provided at runtime via environment variables
+ARG DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy
+ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm prisma generate
 
 # Build TypeScript

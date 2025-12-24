@@ -5,6 +5,8 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL:-postgresql://dummy:dummy@dummy:5432/dummy}
     container_name: finance-flow-api
     restart: unless-stopped
     ports:
