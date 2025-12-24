@@ -54,8 +54,16 @@ RUN pnpm install --frozen-lockfile --prod && \
 
 # Copy built application
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+
+# Install Prisma CLI temporarily to generate Prisma Client
+# Prisma CLI is needed to generate the client, but @prisma/client is already installed
+RUN pnpm add -D prisma@5.7.1
+
+# Generate Prisma Client for production
+# We use a dummy DATABASE_URL since we only need to generate the client, not connect
+ENV DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy
+RUN pnpm exec prisma generate
 
 # Switch to non-root user
 USER nodejs
