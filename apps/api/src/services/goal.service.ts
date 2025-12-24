@@ -1,6 +1,7 @@
 import { prisma } from '../config/database';
 import { GoalType } from '../types/enums';
 import { AppError } from '../middlewares/error.middleware';
+import type { Goal } from '@prisma/client';
 
 export interface CreateGoalDTO {
   name: string;
@@ -53,7 +54,7 @@ export class GoalService {
       prisma.goal.count({ where: { userId } }),
     ]);
 
-    const goalsWithProgress = goals.map((goal) => ({
+    const goalsWithProgress = goals.map((goal: Goal) => ({
       ...goal,
       progress: this.calculateProgress(goal.currentAmount, goal.targetAmount),
     }));

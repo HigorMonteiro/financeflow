@@ -2,6 +2,7 @@ import { prisma } from '../config/database';
 import { AppError } from '../middlewares/error.middleware';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
+import type { Transaction, Budget } from '@prisma/client';
 
 export type BudgetPeriod = 'MONTHLY' | 'YEARLY' | 'WEEKLY';
 
@@ -61,7 +62,7 @@ export class BudgetService {
       },
     });
 
-    return transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    return transactions.reduce((sum: number, t: Transaction) => sum + parseFloat(t.amount), 0);
   }
 
   /**
@@ -97,7 +98,7 @@ export class BudgetService {
     ]);
 
     const budgetsWithProgress = await Promise.all(
-      budgets.map(async (budget) => {
+      budgets.map(async (budget: Budget & { category: { name: string; color: string } }) => {
         const spent = await this.calculateSpent(
           userId,
           budget.categoryId,

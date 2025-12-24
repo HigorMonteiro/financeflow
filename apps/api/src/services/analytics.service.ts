@@ -1,6 +1,7 @@
 import { prisma } from '../config/database';
 import Decimal from 'decimal.js';
 import { getBillingPeriod } from '../utils/billing-period.utils';
+import type { Account, Transaction, Goal } from '@prisma/client';
 
 export interface DashboardData {
   balance: {
@@ -56,12 +57,12 @@ export class AnalyticsService {
     });
 
     // Calcular saldo total
-    const totalBalance = accounts.reduce((sum, acc) => {
+    const totalBalance = accounts.reduce((sum: number, acc: Account) => {
       return sum + parseFloat(acc.balance);
     }, 0);
 
     // Saldo por conta
-    const balanceByAccount = accounts.map((acc) => ({
+    const balanceByAccount = accounts.map((acc: Account) => ({
       accountId: acc.id,
       accountName: acc.name,
       balance: acc.balance,
@@ -71,14 +72,14 @@ export class AnalyticsService {
     // Se todas as contas têm período de fatura configurado, usa o período mais comum
     // Caso contrário, agrupa transações por conta e seu respectivo período
     const accountsWithBilling = accounts.filter(
-      (acc) => acc.billingStartDay && acc.billingEndDay
+      (acc: Account) => acc.billingStartDay && acc.billingEndDay
     );
 
     let monthlyTransactions: any[] = [];
 
     if (accountsWithBilling.length > 0) {
       // Buscar transações agrupadas por período de fatura de cada conta
-      const transactionPromises = accounts.map(async (account) => {
+      const transactionPromises = accounts.map(async (account: Account) => {
         const period = getBillingPeriod(
           account.billingStartDay,
           account.billingEndDay,
@@ -116,12 +117,12 @@ export class AnalyticsService {
     }
 
     const monthlyIncome = monthlyTransactions
-      .filter((t) => t.type === 'INCOME')
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: Transaction) => t.type === 'INCOME')
+      .reduce((sum: number, t: Transaction) => sum + parseFloat(t.amount), 0);
 
     const monthlyExpenses = monthlyTransactions
-      .filter((t) => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      .filter((t: Transaction) => t.type === 'EXPENSE')
+      .reduce((sum: number, t: Transaction) => sum + parseFloat(t.amount), 0);
 
     const monthlyBalance = monthlyIncome - monthlyExpenses;
 
@@ -145,7 +146,7 @@ export class AnalyticsService {
     let categoryTransactions: any[] = [];
 
     if (accountsWithBilling.length > 0) {
-      const categoryPromises = accounts.map(async (account) => {
+      const categoryPromises = accounts.map(async (account: Account) => {
         const period = getBillingPeriod(
           account.billingStartDay,
           account.billingEndDay,
@@ -222,7 +223,7 @@ export class AnalyticsService {
       where: { userId },
     });
 
-    const goalsWithProgress = goals.map((goal) => {
+    const goalsWithProgress = goals.map((goal: Goal) => {
       const current = parseFloat(goal.currentAmount);
       const target = parseFloat(goal.targetAmount);
       const progress = target > 0 ? (current / target) * 100 : 0;
@@ -246,7 +247,7 @@ export class AnalyticsService {
         expenses: monthlyExpenses.toFixed(2),
         balance: monthlyBalance.toFixed(2),
       },
-      recentTransactions: recentTransactions.map((t) => ({
+      recentTransactions: recentTransactions.map((t: Transaction & { category: { name: string; color: string }; account: { name: string; color?: string } }) => ({
         id: t.id,
         date: t.date,
         description: t.description,
@@ -287,7 +288,7 @@ export class AnalyticsService {
 
     const trends: Record<string, { income: number; expenses: number; balance: number }> = {};
 
-    transactions.forEach((transaction) => {
+    transactions.forEach((transaction: Transaction) => {
       const amount = parseFloat(transaction.amount);
       let key: string;
 
@@ -345,7 +346,7 @@ export class AnalyticsService {
 
     const monthlyData: Record<string, { income: number; expenses: number }> = {};
 
-    transactions.forEach((transaction) => {
+    transactions.forEach((transaction: Transaction) => {
       const date = new Date(transaction.date);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const amount = parseFloat(transaction.amount);
@@ -393,7 +394,7 @@ export class AnalyticsService {
 
     const categoryMap = new Map<string, { name: string; color: string; amount: number }>();
 
-    transactions.forEach((transaction) => {
+    transactions.forEach((transaction: Transaction & { category: { name: string; color: string } }) => {
       const categoryId = transaction.categoryId;
       const existing = categoryMap.get(categoryId) || {
         name: transaction.category.name,
@@ -465,13 +466,13 @@ export class AnalyticsService {
       }),
     ]);
 
-    const calculateTotals = (transactions: typeof currentTransactions) => {
+    const calculateTotals = (transactions: Transaction[]) => {
       const income = transactions
-        .filter((t) => t.type === 'INCOME')
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .filter((t: Transaction) => t.type === 'INCOME')
+        .reduce((sum: number, t: Transaction) => sum + parseFloat(t.amount), 0);
       const expenses = transactions
-        .filter((t) => t.type === 'EXPENSE')
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .filter((t: Transaction) => t.type === 'EXPENSE')
+        .reduce((sum: number, t: Transaction) => sum + parseFloat(t.amount), 0);
       return {
         income: new Decimal(income).toFixed(2),
         expenses: new Decimal(expenses).toFixed(2),
