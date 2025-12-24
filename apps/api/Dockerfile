@@ -33,7 +33,7 @@ ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm prisma generate
 
 # Build TypeScript
-RUN pnpm build
+RUN ls -la tsconfig.json && pnpm exec tsc -p tsconfig.json
 
 # Production stage
 FROM base AS runner
