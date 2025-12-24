@@ -26,9 +26,9 @@ COPY . .
 
 # Generate Prisma Client
 # Prisma needs a valid DATABASE_URL format to validate schema during build
-# We use a dummy URL since we don't need to connect during build
+# We use a dummy SQLite URL since we don't need to connect during build
 # The real DATABASE_URL will be provided at runtime via environment variables
-ARG DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy
+ARG DATABASE_URL=file:./prisma/dummy.db
 ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm prisma generate
 
@@ -61,8 +61,8 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 RUN pnpm add -D prisma@5.7.1
 
 # Generate Prisma Client for production
-# We use a dummy DATABASE_URL since we only need to generate the client, not connect
-ENV DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy
+# We use a dummy SQLite URL since we only need to generate the client, not connect
+ENV DATABASE_URL=file:./prisma/dummy.db
 RUN pnpm exec prisma generate
 
 # Switch to non-root user

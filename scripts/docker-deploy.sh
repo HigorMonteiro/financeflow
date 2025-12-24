@@ -26,14 +26,13 @@ Comandos disponíveis:
   build       - Build e iniciar serviços
   logs        - Ver logs de todos os serviços
   logs-api    - Ver logs apenas da API
-  logs-nginx  - Ver logs apenas do Nginx
-  logs-db     - Ver logs apenas do PostgreSQL
+  logs-web    - Ver logs apenas do Frontend
   status      - Ver status dos containers
   migrate     - Aplicar migrações do Prisma
   shell-api   - Abrir shell no container da API
-  shell-db    - Abrir shell no PostgreSQL
+  shell-web   - Abrir shell no container do Frontend
   health      - Verificar health checks
-  backup      - Criar backup do banco de dados
+  backup      - Criar backup do banco SQLite
   clean       - Parar e remover containers e volumes (⚠️ apaga dados)
   help        - Mostrar esta ajuda
 
@@ -104,12 +103,8 @@ case "$COMMAND" in
         docker compose -f "$COMPOSE_FILE" logs -f api
         ;;
     
-    logs-nginx)
-        docker compose -f "$COMPOSE_FILE" logs -f nginx
-        ;;
-    
-    logs-db)
-        docker compose -f "$COMPOSE_FILE" logs -f postgres
+    logs-web)
+        docker compose -f "$COMPOSE_FILE" logs -f web
         ;;
     
     status)
@@ -126,8 +121,8 @@ case "$COMMAND" in
         docker compose -f "$COMPOSE_FILE" exec api sh
         ;;
     
-    shell-db)
-        docker compose -f "$COMPOSE_FILE" exec postgres psql -U financeflow -d financeflow
+    shell-web)
+        docker compose -f "$COMPOSE_FILE" exec web sh
         ;;
     
     health)
@@ -137,14 +132,19 @@ case "$COMMAND" in
         docker compose -f "$COMPOSE_FILE" ps
         echo ""
         echo "Health check da API:"
-        curl -s http://localhost/health || echo -e "${RED}❌ API não responde${NC}"
+        curl -s http://localhost:3000/health || echo -e "${RED}❌ API não responde${NC}"
+        echo ""
+        echo "Health check do Frontend:"
+        curl -s http://localhost/health || echo -e "${RED}❌ Frontend não responde${NC}"
         echo ""
         ;;
     
     backup)
-        BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).sql"
-        echo -e "${GREEN}Criando backup do banco de dados...${NC}"
-        docker compose -f "$COMPOSE_FILE" exec -T postgres pg_dump -U financeflow financeflow > "$BACKUP_FILE"
+        BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).db"
+        echo -e "${GREEN}Criando backup do banco SQLite...${NC}"
+        docker compose -f "$COMPOSE_FILE" cp api:/app/prisma/dev.db "$BACKUP_FILE" 2>/dev/null || \
+        docker compose -f "$COMPOSE_FILE" exec api cp /app/prisma/dev.db /tmp/backup.db && \
+        docker compose -f "$COMPOSE_FILE" cp api:/tmp/backup.db "$BACKUP_FILE"
         echo -e "${GREEN}✅ Backup criado: $BACKUP_FILE${NC}"
         ;;
     

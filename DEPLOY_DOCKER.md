@@ -1,20 +1,25 @@
 # Deploy com Docker Compose
 
-Este documento descreve como fazer deploy completo da aplicação usando Docker Compose, incluindo PostgreSQL, Nginx, Backend e Frontend.
+Este documento descreve como fazer deploy completo da aplicação usando Docker Compose, incluindo Backend API (com SQLite) e Frontend Web.
 
 ## Arquitetura
 
 ```
 ┌─────────────┐
-│   Nginx     │ (Porta 80/443) - Reverse Proxy
-└──────┬──────┘
+│   Frontend   │ (Porta 80) - Nginx interno
+│     Web      │
+└──────┬───────┘
        │
        ├───► /api ────► Backend API (Porta 3000)
        │
-       └───► / ───────► Frontend Web (Porta 80 interno)
+       └───► / ───────► Frontend SPA
        
-Backend API ────► PostgreSQL (Porta 5432 interno)
+Backend API ────► Database (SQLite por padrão ou PostgreSQL se configurado)
 ```
+
+**Banco de Dados:**
+- **Padrão**: SQLite (`file:./prisma/dev.db`) - não requer configuração adicional
+- **Opcional**: PostgreSQL - configure `DATABASE_URL` no `.env` para usar
 
 ## Pré-requisitos
 
@@ -28,13 +33,9 @@ Backend API ────► PostgreSQL (Porta 5432 interno)
 .
 ├── docker-compose.yml          # Configuração principal
 ├── .env                        # Variáveis de ambiente (criar a partir de .env.example)
-├── nginx/
-│   ├── nginx.conf              # Configuração principal do Nginx
-│   └── conf.d/
-│       └── default.conf         # Configuração do servidor
 └── apps/
-    ├── api/                     # Backend
-    └── web/                      # Frontend
+    ├── api/                     # Backend (SQLite)
+    └── web/                      # Frontend (Nginx interno)
 ```
 
 ## Configuração Inicial
@@ -49,13 +50,39 @@ cp .env.example .env
 
 Edite o arquivo `.env` e configure:
 
-- `POSTGRES_PASSWORD`: Senha forte para o banco de dados
+- `DATABASE_URL`: URL do banco de dados (opcional)
+  - **Padrão (SQLite)**: `file:./prisma/dev.db` - não precisa configurar
+  - **PostgreSQL**: `postgresql://financeflow:password@postgres:5432/financeflow`
 - `JWT_SECRET`: Chave secreta para JWT (mínimo 32 caracteres)
 - `FRONTEND_URL`: URL do frontend (ex: `http://localhost` ou `https://seu-dominio.com`)
 - `CORS_ORIGIN`: Origem permitida para CORS
-- `VITE_API_URL`: URL da API para o frontend (ex: `http://localhost/api`)
+- `VITE_API_URL`: URL da API para o frontend (ex: `http://localhost:3000`)
 
-### 2. Gerar JWT Secret
+### 2.1. Usar PostgreSQL (Opcional)
+
+Se quiser usar PostgreSQL ao invés de SQLite:
+
+1. Configure `DATABASE_URL` no `.env`:
+```bash
+DATABASE_URL=postgresql://financeflow:password@postgres:5432/financeflow
+```
+
+2. Configure variáveis do PostgreSQL:
+```bash
+POSTGRES_USER=financeflow
+POSTGRES_PASSWORD=change_me_strong_password
+POSTGRES_DB=financeflow
+POSTGRES_PORT=5432
+```
+
+3. Inicie o PostgreSQL junto com os outros serviços:
+```bash
+docker compose --profile postgres up -d
+```
+
+Ou adicione `postgres` ao profile padrão removendo a linha `profiles:` do serviço postgres no docker-compose.yml.
+
+### 3. Gerar JWT Secret
 
 ```bash
 # Linux/Mac
@@ -93,21 +120,18 @@ docker compose logs -f
 # Apenas API
 docker compose logs -f api
 
-# Apenas Nginx
-docker compose logs -f nginx
-
-# Apenas PostgreSQL
-docker compose logs -f postgres
+# Apenas Frontend
+docker compose logs -f web
 ```
 
 ### 5. Verificar health checks
 
 ```bash
 # API
-curl http://localhost/health
+curl http://localhost:3000/health
 
 # Frontend
-curl http://localhost/
+curl http://localhost/health
 ```
 
 ## Comandos Úteis
@@ -118,7 +142,7 @@ curl http://localhost/
 docker compose down
 ```
 
-### Parar e remover volumes (⚠️ apaga dados do banco)
+### Parar e remover volumes (⚠️ apaga dados do banco SQLite)
 
 ```bash
 docker compose down -v
@@ -128,7 +152,7 @@ docker compose down -v
 
 ```bash
 docker compose restart api
-docker compose restart nginx
+docker compose restart web
 ```
 
 ### Rebuild de um serviço específico
@@ -143,11 +167,8 @@ docker compose up -d --build api
 # API
 docker compose exec api sh
 
-# PostgreSQL
-docker compose exec postgres psql -U financeflow -d financeflow
-
-# Nginx
-docker compose exec nginx sh
+# Frontend
+docker compose exec web sh
 ```
 
 ### Ver logs em tempo real
@@ -191,34 +212,47 @@ git_branch: main
 docker_compose_file: docker-compose.yml
 ```
 
-## Configuração do Nginx
+## Configuração do Frontend
 
-O Nginx está configurado para:
+O Frontend tem Nginx interno configurado para:
 
-- **Porta 80**: HTTP (pode ser redirecionado para HTTPS)
-- **Porta 443**: HTTPS (descomente no `nginx/conf.d/default.conf` quando tiver certificados SSL)
+- **Porta 80**: Servir arquivos estáticos do SPA
+- **`/api/*`**: Proxy reverso para Backend API (porta 3000)
+- **`/health`**: Health check do frontend
+- **`/*`**: Fallback para `index.html` (SPA routing)
 
 ### Rotas:
 
 - `/api/*` → Backend API (porta 3000)
-- `/health` → Health check da API
+- `/health` → Health check
 - `/*` → Frontend (SPA)
 
-### Rate Limiting:
+## Banco de Dados
 
-- API: 10 requisições/segundo (burst: 20)
-- Geral: 30 requisições/segundo (burst: 50)
+### SQLite (Padrão)
 
-## SSL/TLS (Opcional)
+Se `DATABASE_URL` não for definido ou começar com `file:`, o sistema usa SQLite:
 
-Para habilitar HTTPS:
+- **Volume**: `api-db-data`
+- **Localização no container**: `/app/prisma/dev.db`
+- **Persistência**: Os dados são mantidos mesmo após `docker compose down` (mas são removidos com `docker compose down -v`)
+- **Vantagens**: Simples, não requer configuração adicional, rápido para desenvolvimento
 
-1. Obtenha certificados SSL (Let's Encrypt recomendado)
-2. Coloque os certificados em `nginx/ssl/`:
-   - `fullchain.pem`
-   - `privkey.pem`
-3. Descomente o bloco HTTPS no `nginx/conf.d/default.conf`
-4. Reinicie o Nginx: `docker compose restart nginx`
+### PostgreSQL (Opcional)
+
+Para usar PostgreSQL, defina `DATABASE_URL` no formato:
+```
+postgresql://usuario:senha@postgres:5432/nome_do_banco
+```
+
+- **Volume**: `postgres-data`
+- **Persistência**: Dados mantidos em volume Docker
+- **Vantagens**: Melhor para produção, suporta múltiplas conexões simultâneas
+
+**Para iniciar com PostgreSQL:**
+```bash
+docker compose --profile postgres up -d
+```
 
 ## Troubleshooting
 
@@ -232,17 +266,17 @@ docker compose logs [nome-do-container]
 docker compose config
 ```
 
-### Erro de conexão com banco
+### Erro de conexão com banco SQLite
 
 ```bash
-# Verificar se PostgreSQL está rodando
-docker compose ps postgres
+# Verificar se API está rodando
+docker compose ps api
 
-# Verificar logs do PostgreSQL
-docker compose logs postgres
+# Verificar logs do SQLite
+docker compose logs api
 
-# Testar conexão
-docker compose exec postgres psql -U financeflow -d financeflow
+# Verificar permissões do volume
+docker compose exec api ls -la /app/prisma
 ```
 
 ### Erro de migração Prisma
@@ -255,17 +289,17 @@ docker compose exec api pnpm prisma migrate deploy
 docker compose exec api pnpm prisma migrate status
 ```
 
-### Nginx retorna 502 Bad Gateway
+### Frontend não consegue acessar API
 
 ```bash
-# Verificar se backend está rodando
+# Verificar se API está rodando
 docker compose ps api
 
-# Verificar logs do Nginx
-docker compose logs nginx
+# Verificar logs do Frontend
+docker compose logs web
 
-# Verificar conectividade entre containers
-docker compose exec nginx ping api
+# Testar conectividade entre containers
+docker compose exec web ping api
 ```
 
 ### Porta já em uso
@@ -273,20 +307,25 @@ docker compose exec nginx ping api
 ```bash
 # Verificar qual processo está usando a porta
 sudo lsof -i :80
-sudo lsof -i :443
+sudo lsof -i :3000
 
 # Alterar porta no docker-compose.yml ou .env
-NGINX_HTTP_PORT=8080
+API_PORT=3001
+WEB_PORT=8080
 ```
 
 ## Backup do Banco de Dados
 
 ```bash
-# Criar backup
-docker compose exec postgres pg_dump -U financeflow financeflow > backup_$(date +%Y%m%d_%H%M%S).sql
+# Criar backup do SQLite
+docker compose exec api cp /app/prisma/dev.db /app/prisma/backup_$(date +%Y%m%d_%H%M%S).db
+
+# Ou copiar para o host
+docker compose cp api:/app/prisma/dev.db ./backup_$(date +%Y%m%d_%H%M%S).db
 
 # Restaurar backup
-docker compose exec -T postgres psql -U financeflow financeflow < backup.sql
+docker compose cp ./backup.db api:/app/prisma/dev.db
+docker compose restart api
 ```
 
 ## Monitoramento
@@ -295,10 +334,8 @@ docker compose exec -T postgres psql -U financeflow financeflow < backup.sql
 
 Todos os serviços têm health checks configurados:
 
-- **PostgreSQL**: `pg_isready`
-- **API**: `GET /health`
-- **Nginx**: `GET /health`
-- **Frontend**: Health check via Nginx
+- **API**: `GET http://localhost:3000/health`
+- **Frontend**: `GET http://localhost/health`
 
 ### Verificar saúde dos serviços
 
@@ -307,7 +344,8 @@ Todos os serviços têm health checks configurados:
 docker compose ps
 
 # Health check manual
-curl http://localhost/health
+curl http://localhost:3000/health  # API
+curl http://localhost/health        # Frontend
 ```
 
 ## Atualização
@@ -326,19 +364,17 @@ ansible-playbook -i inventory.yml deploy-simple.yml
 ## Segurança
 
 - ✅ Containers rodam com usuários não-root quando possível
-- ✅ Volumes persistentes para dados do banco
-- ✅ Rate limiting no Nginx
-- ✅ Security headers configurados
+- ✅ Volume persistente para dados do banco SQLite
+- ✅ Security headers configurados no Nginx do frontend
 - ✅ CORS configurado adequadamente
-- ⚠️ Configure SSL/TLS em produção
 - ⚠️ Use senhas fortes no `.env`
 - ⚠️ Mantenha `.env` seguro (não commite no git)
+- ⚠️ Configure SSL/TLS em produção (use um proxy reverso externo se necessário)
 
 ## Próximos Passos
 
-1. Configure SSL/TLS com Let's Encrypt
-2. Configure backup automático do banco de dados
-3. Configure monitoramento (Prometheus, Grafana, etc.)
-4. Configure logs centralizados (ELK, Loki, etc.)
-5. Configure CI/CD para deploy automático
-
+1. Configure backup automático do banco SQLite
+2. Configure monitoramento (Prometheus, Grafana, etc.)
+3. Configure logs centralizados (ELK, Loki, etc.)
+4. Configure CI/CD para deploy automático
+5. Configure SSL/TLS com um proxy reverso externo (se necessário)
