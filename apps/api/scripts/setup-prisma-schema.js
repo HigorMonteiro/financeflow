@@ -13,11 +13,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const schemaPath = join(__dirname, '..', 'prisma', 'schema.prisma');
 
-const DATABASE_URL = process.env.DATABASE_URL || 'file:./prisma/dev.db';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://financeflow:changeme@postgres:5432/financeflow';
 
 function detectProvider(url) {
   if (!url) {
-    return 'sqlite';
+    return 'postgresql';
   }
   
   // Se começa com file: ou não tem protocolo, é SQLite
@@ -30,8 +30,8 @@ function detectProvider(url) {
     return 'postgresql';
   }
   
-  // Padrão: SQLite
-  return 'sqlite';
+  // Padrão: PostgreSQL
+  return 'postgresql';
 }
 
 async function updateMigrationLock() {

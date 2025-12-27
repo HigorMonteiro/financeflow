@@ -23,11 +23,15 @@ const apiDir = process.env.PM2_API_DIR || __dirname;
 const userHome = process.env.PM2_USER_HOME || os.homedir();
 const logDir = process.env.PM2_LOG_DIR || path.join(userHome, '.pm2', 'logs');
 
+console.log('API Directory:', apiDir);
+console.log('Log Directory:', logDir);
+console.log('User Home:', userHome);
+console.log('Environment Variables:', process.env);
+
 module.exports = {
   apps: [{
     name: 'finance-flow-api',
-    script: 'node',
-    args: 'dist/server.js',
+    script: path.join(apiDir, 'dist', 'server.js'),
     cwd: apiDir,
     instances: parseInt(process.env.PM2_INSTANCES || '1', 10),
     exec_mode: process.env.PM2_MODE || 'fork',

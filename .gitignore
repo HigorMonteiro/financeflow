@@ -34,6 +34,7 @@ Thumbs.db
 *.db-journal
 *.sqlite
 *.sqlite3
+apps/api/docker/postgres-data/
 
 # Prisma
 apps/api/prisma/migrations/

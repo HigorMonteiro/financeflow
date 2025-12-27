@@ -8,6 +8,9 @@
     "build": "tsc --project tsconfig.build.json && vite build",
     "build:skip-check": "vite build",
     "preview": "vite preview",
+    "start": "node server.js",
+    "start:prod": "NODE_ENV=production pm2-runtime start ecosystem.config.cjs",
+    "start:dev": "NODE_ENV=development node server.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "vitest"
   },
@@ -36,7 +39,8 @@
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4",
     "@hookform/resolvers": "^3.3.2",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.5",

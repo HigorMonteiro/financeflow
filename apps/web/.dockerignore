@@ -23,6 +23,7 @@ __tests__
 *.spec.ts
 *.spec.tsx
 vitest.config.ts
-vite.config.ts
-tsconfig.json
-tsconfig.node.json
+# vite.config.ts is needed for build
+# tsconfig.json is needed for build
+# tsconfig.node.json is needed for build
+tsconfig.build.json

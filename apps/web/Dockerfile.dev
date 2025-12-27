@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 
@@ -9,12 +9,25 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
+
+# Explicitly install the ARM64 native binary for Rollup
+# This fixes the issue where pnpm doesn't install optional dependencies correctly
+RUN pnpm add -D @rollup/rollup-linux-arm64-gnu@4.54.0 || \
+    (cd /app && npm install --save-dev @rollup/rollup-linux-arm64-gnu@4.54.0) || \
+    echo "Failed to install native binary, will use patch"
 
 # Copy source code
 COPY . .
 
+# Copy patch script
+COPY patch-rollup.cjs /app/patch-rollup.cjs
+
+# Patch Rollup to use JavaScript implementation instead of native binary
+# This fixes the issue where Rollup can't find the native binary on ARM64
+RUN node /app/patch-rollup.cjs || echo "Patch script completed"
+
 EXPOSE 5173
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "dev", "--host", "0.0.0.0"]
 

@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Load .env file but don't override existing environment variables
+// This is important for Docker where env vars are set via docker-compose
+dotenv.config({ override: false });
 
 const envSchema = z.object({
   // Database
