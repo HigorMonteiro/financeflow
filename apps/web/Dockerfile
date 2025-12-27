@@ -45,12 +45,12 @@ RUN mkdir -p logs && chown -R nodejs:nodejs logs && \
 
 USER nodejs
 
-EXPOSE 5173
+EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-ENV PORT=5173
+ENV PORT=80
 ENV NODE_ENV=production
 
 ENTRYPOINT ["./entrypoint.sh"]
