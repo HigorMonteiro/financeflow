@@ -29,6 +29,7 @@ export interface Transaction {
   account: {
     id: string;
     name: string;
+    color?: string;
   };
 }
 
@@ -246,7 +247,6 @@ export function TransactionTable({
                                 setEditingCategoryId(null);
                               }
                             }}
-                            autoFocus
                           >
                             <SelectTrigger className="h-7 text-xs min-w-[150px]">
                               <SelectValue />

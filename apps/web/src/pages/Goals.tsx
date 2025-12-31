@@ -28,6 +28,7 @@ export function Goals() {
   const [sortBy, setSortBy] = useState<SortOption>('deadline');
   const queryClient = useQueryClient();
   const itemsPerPage = useUserPagination();
+  const { toast } = useToast();
 
   const {
     data,

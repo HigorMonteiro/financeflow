@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cardsService, Card as CardType } from '@/services/cards.service';
+import { cardsService, Card as CardType, UpdateCardData } from '@/services/cards.service';
 import { Plus, Trash2, Edit, Save, X, CreditCard, Loader2 } from 'lucide-react';
 
 const BANK_OPTIONS = [
@@ -62,7 +62,7 @@ export function CardsSettings() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CardType> }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateCardData }) =>
       cardsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cards'] });
@@ -79,7 +79,18 @@ export function CardsSettings() {
 
   const handleSave = () => {
     if (editingId) {
-      updateMutation.mutate({ id: editingId, data: formData });
+      updateMutation.mutate({ 
+        id: editingId, 
+        data: {
+          name: formData.name,
+          bank: formData.bank,
+          lastFourDigits: formData.lastFourDigits ? formData.lastFourDigits : undefined,
+          bestPurchaseDay: formData.bestPurchaseDay,
+          dueDay: formData.dueDay,
+          closingDay: formData.closingDay,
+          limit: formData.limit ? formData.limit : undefined,
+        }
+      });
     } else {
       createMutation.mutate({
         ...formData,

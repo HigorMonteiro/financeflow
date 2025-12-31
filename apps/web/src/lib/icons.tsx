@@ -21,10 +21,9 @@ export function getIcon(iconName: string): ComponentType<{ className?: string }>
  */
 export function renderIcon(
   iconName: string,
-  className?: string,
-  size?: number
+  className?: string
 ): JSX.Element {
   const IconComponent = getIcon(iconName);
-  return <IconComponent className={className} size={size} />;
+  return <IconComponent className={className} />;
 }
 

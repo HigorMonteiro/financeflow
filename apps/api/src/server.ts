@@ -11,8 +11,12 @@ const app = express();
 
 app.use(helmet());
 app.use(cors({
-  origin: env.CORS_ORIGIN || env.FRONTEND_URL,
-  credentials: env.CORS_CREDENTIALS === 'true',
+  origin: [
+    'http://seorganize.pro',
+    'https://seorganize.pro',
+    'http://localhost:3000', // para dev local
+  ],
+  credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -56,7 +56,7 @@ Existem várias formas de criar um usuário. Veja o arquivo `CREATE_USER.md` par
 
 **Via CLI:**
 ```bash
-pnpm create-user seu@email.com suasenha123 "Seu Nome"
+pnpm create-user higor@email.com asdf123 "Higor"
 ```
 
 **Via Seed (usuário padrão):**

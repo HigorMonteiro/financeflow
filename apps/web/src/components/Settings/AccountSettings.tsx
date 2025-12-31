@@ -158,6 +158,7 @@ export function AccountSettings() {
       type: 'CHECKING',
       balance: '0',
       currency: 'BRL',
+      color: '#3b82f6',
       billingStartDay: null,
       billingEndDay: null,
     });
