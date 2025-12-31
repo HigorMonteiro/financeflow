@@ -97,7 +97,7 @@ export function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-xl md:text-2xl">Login</CardTitle>
-          <CardDescription className="hidden md:block text-sm md:text-base">Entre com sua conta para continuar</CardDescription>
+          <CardDescription className="hidden md:block text-sm md:text-base">Entre com sua conta para continuar no SeOrganize</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
