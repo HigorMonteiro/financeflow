@@ -17,7 +17,7 @@ COPY --from=deps /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
 COPY . .
 
-ARG VITE_API_URL=http://localhost:3000
+ARG VITE_API_URL=https://api.seorganize.pro/api
 ENV VITE_API_URL=$VITE_API_URL
 ENV NODE_ENV=production
 

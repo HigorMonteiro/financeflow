@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
+        VITE_API_URL: ${VITE_API_URL:-https://api.seorganize.pro/api}
     container_name: finance-flow-web
     restart: unless-stopped
     ports:
