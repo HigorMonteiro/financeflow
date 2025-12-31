@@ -23,7 +23,12 @@
     "create-cards:higor": "tsx src/scripts/create-cards.ts higor@gmail.com",
     "delete-user": "tsx src/scripts/delete-user.ts",
     "test-login": "tsx src/scripts/test-login.ts",
-    "read-excel": "tsx src/scripts/read-excel.ts"
+    "read-excel": "tsx src/scripts/read-excel.ts",
+    "user:create": "tsx scripts/create-user.ts",
+    "user:create:cli": "tsx scripts/create-user-cli.ts",
+    "user:create:batch": "tsx scripts/create-users-batch.ts",
+    "random-data:seed": "tsx prisma/random-data.seed.ts",
+    "test-user:seed": "tsx prisma/test-user.seed.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
